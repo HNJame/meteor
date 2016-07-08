@@ -3,7 +3,7 @@
 
 一个实时地干离线的活的平台！<br />
 基于[hive sql](https://cwiki.apache.org/confluence/display/Hive/LanguageManual)，能进行任何复杂业务的sql运算。<br />
-UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可以算。并且是0误差。一般为2分钟时延。<br />
+UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可以算。并且是0误差。<br />
 
 
 ##### 一、特点：
@@ -11,7 +11,7 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 1、支持任何量级的0误差去重。
 2、支持任何量级的大表join。
 3、基于hive sql，支持创建中间表。
-4、分钟级时延，一般为2分钟。
+4、分钟级时延，一般为2分钟。（基于你的spark集群规模和要处理的数据量大小，而设的spark stream的batch interval时间频次而定，一般设1分钟）
 </pre>
 
 ##### 二、使用技术
@@ -31,7 +31,7 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 4、通过函数：c_sum，c_distinct，c_join，c_max和c_min。利用redis或cassandra,对所有时间片进行全局运算。
 </pre>
 
-##### 四、安装
+##### 五、安装
 [查看说明](https://github.com/meteorchenwu/meteor/blob/chenwu/INSTALL.md)
 
 
