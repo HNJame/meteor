@@ -2,7 +2,7 @@
 -------------
 <pre>
 一个实时地干离线的活的平台！
-基于hive sql，能进行任何复杂业务的sql运算。
+基于[hive sql](https://cwiki.apache.org/confluence/display/Hive/LanguageManual)，能进行任何复杂业务的sql运算。
 UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可以算，并且是0误差！一般为2分钟时延！
 </pre>
 
@@ -28,7 +28,7 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 1、系统按固定间隔（如1min）去kafka拉数据，叫时间片数据。
 2、系统将各时间片数据转换成表，基于hive sql进行运算。
 3、系统对各时间片数据独立无干扰进行运算。每个表系统都会自动加上当前时间片的uuid。
-4、通过函数:c_sum,c_distinct,c_join,c_max和c_min.利用redis或cassandra,对所有时间片进行全局运算。
+4、通过函数：c_sum，c_distinct，c_join，c_max和c_min。利用redis或cassandra,对所有时间片进行全局运算。
 </pre>
 
 ##### 四、安装
