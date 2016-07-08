@@ -10,7 +10,8 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 <pre>
 1、支持任何量级的0误差去重！
 2、支持任何量级的大表join！
-3、分钟级时延，一般为2分钟。
+3、支持创建中间表
+4、分钟级时延，一般为2分钟。
 </pre>
 
 ##### 二、使用技术
@@ -29,3 +30,8 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 3、系统对各时间片数据独立无干扰进行运算。每个表系统都会自动加上当前时间片的uuid。
 4、通过函数:c_sum,c_distinct,c_join,c_max和c_min.利用redis或cassandra,对所有时间片进行全局运算。
 </pre>
+
+##### 四、安装
+[查看说明](https://github.com/meteorchenwu/meteor/blob/chenwu/README.md)
+
+
