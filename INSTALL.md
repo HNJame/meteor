@@ -14,7 +14,7 @@
 5、取jetty-server和mc模块在target目录下的包，执行如下命令，就可以通过<pre>http://x.x.x.x:8080</pre>，进入前台管理系统<br />
 java -Xms128m -Xmx128m -cp /xx/xx/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/xx/xx/meteor-mc-1.0-SNAPSHOT.war" "/" "8080" > mc.log 2>&1 & <br /><br />
 
-...
+待续...
 
 
 
