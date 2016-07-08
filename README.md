@@ -6,23 +6,23 @@
 UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可以算，并且是0误差！
 </pre>
 
-###### 一、特点：
+##### 一、特点：
 <pre>
 1、支持任何量级的0误差去重！
 2、支持任何量级的大表join！
 3、分钟级时延，一般为2分钟。
 </pre>
 
-###### 二、使用技术
+##### 二、使用技术
 <pre>
 1、框架：kafka，spark-stream，spark-sql，redis集群，cassandra（可选），mysql
 2、开发语言：java，scala
 </pre>
 
-###### 三、示意图
+##### 三、示意图
 ![image](https://github.com/meteorchenwu/meteor/blob/chenwu/mc/src/main/webapp/img/overview.jpg)
 
-###### 四、理念
+##### 四、理念
 <pre>
 1、系统按固定间隔（如1min）去kafka拉数据，叫时间片数据。
 2、系统将各时间片数据转换成表，基于hive sql进行运算。
