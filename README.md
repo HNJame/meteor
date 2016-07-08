@@ -2,8 +2,8 @@
 -------------
 <pre>
 一个实时地干离线的活的平台！
-基于hive sql，能进行任何复杂业务的sql运算。号称：只有想不到，没有做不到！
-UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可以算，并且是0误差！
+基于hive sql，能进行任何复杂业务的sql运算。
+UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可以算，并且是0误差！一般为2分钟时延！
 </pre>
 
 ##### 一、特点：
@@ -32,6 +32,6 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 </pre>
 
 ##### 四、安装
-[查看说明](https://github.com/meteorchenwu/meteor/blob/chenwu/README.md)
+[查看说明](https://github.com/meteorchenwu/meteor/blob/chenwu/INSTALL.md)
 
 
