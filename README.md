@@ -1,10 +1,10 @@
 流星实时数据开发平台
 -------------
-<pre>
-一个实时地干离线的活的平台！
-基于[hive sql](https://cwiki.apache.org/confluence/display/Hive/LanguageManual)，能进行任何复杂业务的sql运算。
-UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可以算，并且是0误差！一般为2分钟时延！
-</pre>
+
+一个实时地干离线的活的平台！<br />
+基于[hive sql](https://cwiki.apache.org/confluence/display/Hive/LanguageManual)，能进行任何复杂业务的sql运算。<br />
+UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可以算，并且是0误差！一般为2分钟时延！<br />
+
 
 ##### 一、特点：
 <pre>
