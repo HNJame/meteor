@@ -31,7 +31,7 @@ x.x.x.x cassandra3<br /><br />
 
 4、执行mvn clean install -Dmaven.test.skip=true，打包。<br /><br />
 
-5、前台管理系统，通过http://x.x.x.x:8070 登录<br />
+5、启动前台管理系统程序，通过http://x.x.x.x:8070 登录<br />
 java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/mc/target/meteor-mc-1.0-SNAPSHOT.war" "/" "8070" > mc.log 2>&1 & <br /><br />
 
 6、启动模拟源头数据程序<br />
