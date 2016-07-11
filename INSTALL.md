@@ -40,6 +40,7 @@ java -Xms128m -Xmx128m -cp /data/meteor/demo/target/meteor-demo-1.0-SNAPSHOT-jar
 7、启动后台实时计算程序<br />
 1)按需修改/data/meteor/conf/meteor.properties<br />
 2)将/data/meteor/hiveudf/target/meteor-hiveudf-1.0-SNAPSHOT-jar-with-dependencies.jar，复制到spark集群每台机器/data/spark_lib_ext/下<br />
+3)将/data/meteor/conf/log4j.properties，复制到spark集群每台机器:spark安装目录/conf/，下
 3)编辑：spark安装目录/conf/spark-default.conf，加入如下配置<br />
 <pre>
 spark.driver.extraClassPath  /data/spark_lib_ext/*
