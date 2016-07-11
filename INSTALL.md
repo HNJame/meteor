@@ -31,13 +31,21 @@ x.x.x.x cassandra3<br /><br />
 
 4、执行mvn clean install -Dmaven.test.skip=true，打包。<br /><br />
 
-5、执行如下命令，就可以通过http://x.x.x.x:8080 ，进入前台管理系统<br />
-java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/mc/target/meteor-mc-1.0-SNAPSHOT.war" "/" "8080" > mc.log 2>&1 & <br /><br />
+5、前台管理系统，通过http://x.x.x.x:8070 登录<br />
+java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/mc/target/meteor-mc-1.0-SNAPSHOT.war" "/" "8070" > mc.log 2>&1 & <br /><br />
 
-6、取demo模块在target目录下的包，执行如下命令，启动模拟源头数据程序<br />
+6、启动模拟源头数据程序<br />
 java -Xms128m -Xmx128m -cp /data/meteor/demo/target/meteor-demo-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.demo.DemoSourceData <br /><br />
 
-7、取server模块在target目录下的包，执行如下命令，启动后台实时计算程序<br />
+7、启动后台实时计算程序<br />
+1)按需修改/data/meteor/conf/meteor.properties<br />
+2)将/data/meteor/hiveudf/target/meteor-hiveudf-1.0-SNAPSHOT-jar-with-dependencies.jar，复制到spark集群每台机器/data/spark_lib_ext/下<br />
+3)编辑：spark安装目录/conf/spark-default.conf，加入如下配置<br />
+<pre>
+spark.driver.extraClassPath  /data/spark_lib_ext/*
+spark.executor.extraClassPath  /data/spark_lib_ext/*
+</pre>
+4)启动程序
 <pre>
 spark安装目录/bin/spark-submit \
   --class com.meteor.server.MeteorServer \
@@ -51,8 +59,11 @@ spark安装目录/bin/spark-submit \
   /data/meteor/server/target/meteor-server-1.0-SNAPSHOT-jar-with-dependencies.jar \
   "/data/meteor/conf/meteor.properties"
 </pre>
+<br />
 
-待续...
+8、启动如下程序，用于把执行日志导回mysql，方便前台管理系统查看<br />
+java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/transfer/target/meteor-transfer-1.0-SNAPSHOT.war" "/" "8080" > transfer.log 2>&1 & <br /><br />
+
 
 
 
