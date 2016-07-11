@@ -620,5 +620,6 @@
 		<module>datasync</module>
 		<module>task</module>
 		<module>jetty-server</module>
+		<module>demo</module>
 	</modules>
 </project>
