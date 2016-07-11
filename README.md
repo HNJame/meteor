@@ -31,7 +31,7 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 4、通过函数：c_sum，c_distinct，c_join，c_max和c_min。利用redis或cassandra,对所有时间片进行全局运算。
 </pre>
 
-##### 五、安装
+##### 五、安装和demo示例
 [查看说明](https://github.com/meteorchenwu/meteor/blob/chenwu/INSTALL.md)
 
 
