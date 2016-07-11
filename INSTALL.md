@@ -41,12 +41,12 @@ java -Xms128m -Xmx128m -cp /data/meteor/demo/target/meteor-demo-1.0-SNAPSHOT-jar
 1)按需修改/data/meteor/conf/meteor.properties<br />
 2)将/data/meteor/hiveudf/target/meteor-hiveudf-1.0-SNAPSHOT-jar-with-dependencies.jar，复制到spark集群每台机器/data/spark_lib_ext/下<br />
 3)将/data/meteor/conf/log4j.properties，复制到spark集群每台机器:spark安装目录/conf/，下
-3)编辑：spark安装目录/conf/spark-default.conf，加入如下配置<br />
+4)编辑：spark安装目录/conf/spark-default.conf，加入如下配置<br />
 <pre>
 spark.driver.extraClassPath  /data/spark_lib_ext/*
 spark.executor.extraClassPath  /data/spark_lib_ext/*
 </pre>
-4)启动程序
+5)启动程序
 <pre>
 spark安装目录/bin/spark-submit \
   --class com.meteor.server.MeteorServer \
