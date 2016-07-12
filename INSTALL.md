@@ -238,7 +238,7 @@ java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-
 ##### 5、启动模拟源头数据程序
 java -Xms128m -Xmx128m -cp /data/meteor/demo/target/meteor-demo-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.demo.DemoSourceData <br /><br />
 
-##### 6、启动后台实时计算程序
+##### 6、启动后台实时计算程序server
 1)按需修改/data/meteor/conf/meteor.properties<br />
 2)cp /data/meteor/hiveudf/target/meteor-hiveudf-1.0-SNAPSHOT-jar-with-dependencies.jar /data/spark_lib_ext/<br />
 3)cp /data/meteor/conf/log4j.properties /data/apps/spark/conf/<br />
@@ -261,8 +261,9 @@ spark.executor.extraClassPath  /data/spark_lib_ext/*
   /data/meteor/server/target/meteor-server-1.0-SNAPSHOT-jar-with-dependencies.jar \
   "/data/meteor/conf/meteor.properties"
 </pre>
+可通过http://本机外网IP:4040查看
 
-8、启动日志转发程序
+##### 7、启动日志转发程序
 用于把执行日志导回mysql，方便前台管理系统查看<br />
 java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/transfer/target/meteor-transfer-1.0-SNAPSHOT.war" "/" "8090" > transfer.log 2>&1 & <br /><br />
 
