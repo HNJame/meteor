@@ -78,6 +78,7 @@
 							<div class="controls">
 								<textarea name="fetchSql" id="fetchSql" rows="13" class="ht-width-p80" style="overflow:auto;" required>${defFileTask.fetchSql}</textarea>
 								<div><a class="muted" href="${ctx}/pages/help/SqlTask.jsp" target="_blank">查看sql帮助文档</a></div>
+								<p class="muted">要想把统计结果纳入监控，select的字段中必须包含stime，格式为yyyy-MM-dd HH:mm:ss</p>
 							</div>
 						</div>
 						
