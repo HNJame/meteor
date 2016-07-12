@@ -40,9 +40,9 @@ public class DemoSourceData {
 				String jsonData = "{\"action\":\"heartbeat\","
 						+ "\"stime\":\""
 						+ time
-						+ "\",\"uid\":"
+						+ "\",\"uid\":\""
 						+ uid
-						+ ",\"ref\":\""
+						+ "\",\"ref\":\""
 						+ ref
 						+ "\"}";
 				KeyedMessage<String, String> msg = new KeyedMessage<String, String>(topic, UUID.randomUUID().toString(), jsonData);
