@@ -16,7 +16,7 @@ public class DemoSourceData {
 
 	public static void main(String[] args) throws Exception {
 		Properties props = new Properties();
-		props.put("metadata.broker.list", "kafka1:9092,kafka2:9092,kafka3:9092");
+		props.put("metadata.broker.list", "kafka1:9092");
 		props.put("serializer.class", "kafka.serializer.StringEncoder");
 		props.put("partitioner.class", "kafka.producer.DefaultPartitioner");
 		props.put("request.required.acks", "1");
@@ -34,11 +34,11 @@ public class DemoSourceData {
 			List<KeyedMessage<String, String>> msgList = new ArrayList<KeyedMessage<String, String>>();
 			for (int i = 0; i < 10; i++) {
 				String time = DateFormatUtils.format(System.currentTimeMillis(), "yyyy-MM-dd HH:mm:ss");
-				String uid = uidArr[new Random(uidArr.length - 1).nextInt()];
-				String ref = refArr[new Random(refArr.length - 1).nextInt()];
+				String uid = uidArr[new Random().nextInt(uidArr.length)];
+				String ref = refArr[new Random().nextInt(refArr.length)];
 				
 				String jsonData = "{\"action\":\"heartbeat\","
-						+ "\"time\":\""
+						+ "\"stime\":\""
 						+ time
 						+ "\",\"uid\":"
 						+ uid
