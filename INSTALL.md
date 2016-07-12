@@ -1,12 +1,13 @@
-流星实时数据开发平台安装，并用一台机器运行demo示例说明
+安装并用一台机器运行demo示例说明
 ====================================
 
 ##目录
 * [创建spark用户和ssh无密码登录](#创建spark用户和ssh无密码登录)
+* [java](#java)
+* [安装spark](#安装spark)
 
 创建spark用户和ssh无密码登录
 ---------------------
-一、找一台机器，创建spark用户，并使其能ssh无密码登录自己
 <pre>
 sudo -s su - root
 useradd -s /bin/bash -p 123456789 -m spark -d /data/spark
@@ -19,15 +20,20 @@ ssh-keygen -t rsa（一直按空格键）
 cat /data/spark/.ssh/id_rsa.pub >> /data/spark/.ssh/authorized_keys
 </pre>
 
-二、安装Java HotSpot 1.7
+java
+---------------------
+安装Java HotSpot 1.7
 
-三、安装spark
+安装spark
+---------------------
+<pre>
 1、下载spark：http://www.apache.org/dyn/closer.lua/spark/spark-1.6.2/spark-1.6.2-bin-hadoop2.4.tgz
 2、cd /data/apps/，把包放到这个目录下，解压：tar -zxvf spark-1.6.2-bin-hadoop2.4.tgz
 3、ln -s spark-1.6.2-bin-hadoop2.4 spark
 4、cd /data/apps/spark/conf
 5、cp slaves.template slaves
 6、cp log4j.properties.template log4j.properties，并修改成如下:
+</pre>
 <pre>
 log4j.rootCategory=WARN, console
 log4j.appender.console=org.apache.log4j.ConsoleAppender
