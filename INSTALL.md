@@ -26,15 +26,12 @@ java
 
 安装spark
 ---------------------
-<pre>
-1、下载spark：http://www.apache.org/dyn/closer.lua/spark/spark-1.6.2/spark-1.6.2-bin-hadoop2.4.tgz
-2、cd /data/apps/，把包放到这个目录下，解压：tar -zxvf spark-1.6.2-bin-hadoop2.4.tgz
-3、ln -s spark-1.6.2-bin-hadoop2.4 spark
-4、cd /data/apps/spark/conf
-5、cp slaves.template slaves
-6、cp log4j.properties.template log4j.properties，并修改成如下:
-</pre>
-
+##### 1、下载spark：http://www.apache.org/dyn/closer.lua/spark/spark-1.6.2/spark-1.6.2-bin-hadoop2.4.tgz
+##### 2、cd /data/apps/，把包放到这个目录下，解压：tar -zxvf spark-1.6.2-bin-hadoop2.4.tgz
+##### 3、ln -s spark-1.6.2-bin-hadoop2.4 spark
+##### 4、cd /data/apps/spark/conf
+##### 5、cp slaves.template slaves
+##### 6、cp log4j.properties.template log4j.properties，并修改成如下:
 <pre>
 log4j.rootCategory=WARN, console
 log4j.appender.console=org.apache.log4j.ConsoleAppender
