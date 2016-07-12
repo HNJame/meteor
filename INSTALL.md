@@ -1,5 +1,6 @@
 安装并用一台机器运行demo示例说明
 ====================================
+以下安装说明，只是为了说明流程步骤，相关优化配置，自己按需调整。另外如果自己要用的spark、kafka、redis和cassandra是不同的版本，请相当修改本平台pom.xml里的驱动版本
 
 ##目录
 * [创建spark用户和ssh无密码登录](#创建spark用户和ssh无密码登录)
@@ -26,7 +27,8 @@ cat /data/spark/.ssh/id_rsa.pub >> /data/spark/.ssh/authorized_keys
 
 java
 ---------------------
-<pre>安装Java HotSpot 1.7</pre>
+安装Java HotSpot 1.7
+<br />
 
 安装spark
 ---------------------
@@ -218,26 +220,29 @@ vim /etc/hosts
 127.0.0.1 cassandra1
 </pre>
 
-2、下载该平台源码，假设本地路径为：/data/meteor，在你的mysql中执行如下sql脚本<br />
+
+下载本平台源码，编译，启动
+---------------------
+##### 1、下载该平台源码，假设本地路径为：/data/meteor，在你的mysql中执行如下sql脚本
 /data/meteor/doc/sql/create.sql<br />
 /data/meteor/doc/sql/init_demo.sql<br /><br />
 
-3、将/data/meteor/dao/src/main/resources/meteor-app.properties的内容，改为你的mysql连接信息。<br /><br />
+##### 2、将/data/meteor/dao/src/main/resources/meteor-app.properties的内容，改为你的mysql连接信息
 
-4、执行mvn clean install -Dmaven.test.skip=true，打包。<br /><br />
-其中下载scala会很慢，因为是在国外的，可以从http://pan.baidu.com/s/1bpxBhrL这里下载scala的包，解压到你的maven respository/org/目录下
+##### 3、打包，执行mvn clean install -Dmaven.test.skip=true
+其中下载scala包会很慢，因为是在国外的，可以从http://pan.baidu.com/s/1bpxBhrL这里下载并解压到你的maven respository/org/目录下
 
-5、启动前台管理系统程序，通过http://x.x.x.x:8070 登录<br />
+##### 4、启动前台管理系统程序，通过http://x.x.x.x:8070 登录
 java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/mc/target/meteor-mc-1.0-SNAPSHOT.war" "/" "8070" > mc.log 2>&1 & <br /><br />
 
-6、启动模拟源头数据程序<br />
+##### 5、启动模拟源头数据程序
 java -Xms128m -Xmx128m -cp /data/meteor/demo/target/meteor-demo-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.demo.DemoSourceData <br /><br />
 
-7、启动后台实时计算程序<br />
+##### 6、启动后台实时计算程序
 1)按需修改/data/meteor/conf/meteor.properties<br />
 2)cp /data/meteor/hiveudf/target/meteor-hiveudf-1.0-SNAPSHOT-jar-with-dependencies.jar /data/spark_lib_ext/<br />
 3)cp /data/meteor/conf/log4j.properties /data/apps/spark/conf/<br />
-4)vim /data/apps/spark/conf/spark-default.conf<br />
+4)vim /data/apps/spark/conf/spark-defaults.conf<br />
 <pre>
 spark.driver.extraClassPath  /data/spark_lib_ext/*
 spark.executor.extraClassPath  /data/spark_lib_ext/*
@@ -256,9 +261,9 @@ spark.executor.extraClassPath  /data/spark_lib_ext/*
   /data/meteor/server/target/meteor-server-1.0-SNAPSHOT-jar-with-dependencies.jar \
   "/data/meteor/conf/meteor.properties"
 </pre>
-<br />
 
-8、启动如下程序，用于把执行日志导回mysql，方便前台管理系统查看<br />
+8、启动日志转发程序
+用于把执行日志导回mysql，方便前台管理系统查看<br />
 java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/transfer/target/meteor-transfer-1.0-SNAPSHOT.war" "/" "8090" > transfer.log 2>&1 & <br /><br />
 
 
