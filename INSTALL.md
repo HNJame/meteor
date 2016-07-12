@@ -91,10 +91,12 @@ export SPARK_LOCAL_DIRS=/tmp
 <br />
 安装redis集群
 ---------------------
-1、下载redis-3.0.7：http://redis.io/download
-2、找一个临时目录，解压：tar -zxvf redis-3.0.7.tar.gz
-3、cd redis-3.0.7，执行make命令
-4、
+##### 1、下载redis-3.0.7：http://redis.io/download
+##### 2、找一个临时目录，解压：tar -zxvf redis-3.0.7.tar.gz
+##### 3、cd redis-3.0.7，执行make命令
+##### 4、复制make结果
+
+<pre>
 mkdir -p /data/apps/redis-3.0.7/conf 
 mkdir -p /data/apps/redis-3.0.7/bin 
 mkdir -p /data/apps/redis-3.0.7/data
@@ -103,8 +105,11 @@ cp redis.conf sentinel.conf /data/apps/redis/conf
 cp runtest* /data/apps/redis/bin
 cd src
 cp mkreleasehdr.sh redis-benchmark redis-check-aof redis-check-dump redis-cli redis-sentinel redis-server redis-trib.rb /data/apps/redis/bin/
-5、
-cp /data/apps/redis/conf/redis.conf /data/apps/redis/conf/redis-6379.conf
+</pre>
+
+##### 5、配置集群
+####### 节点1
+cp /data/apps/redis/conf/redis.conf /data/apps/redis/conf/redis-6379.conf<br />
 vim /data/apps/redis/conf/redis-6379.conf
 <pre>
 daemonize yes
@@ -126,7 +131,8 @@ cluster-enabled yes
 cluster-config-file /data/apps/redis/conf/nodes-6379.conf
 </pre>
 
-cp /data/apps/redis/conf/redis.conf /data/apps/redis/conf/redis-6380.conf
+####### 节点2
+cp /data/apps/redis/conf/redis.conf /data/apps/redis/conf/redis-6380.conf<br />
 vim /data/apps/redis/conf/redis-6380.conf
 <pre>
 daemonize yes
@@ -148,8 +154,8 @@ cluster-enabled yes
 cluster-config-file /data/apps/redis/conf/nodes-6380.conf
 </pre>
 
-
-cp /data/apps/redis/conf/redis.conf /data/apps/redis/conf/redis-6381.conf
+####### 节点3
+cp /data/apps/redis/conf/redis.conf /data/apps/redis/conf/redis-6381.conf<br />
 vim /data/apps/redis/conf/redis-6381.conf
 <pre>
 daemonize yes
