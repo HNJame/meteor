@@ -32,7 +32,7 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 </pre>
 
 #### 五、安装和demo示例
-[查看详情](https://github.com/meteorchenwu/meteor/blob/chenwu/INSTALL.md)
+[查看详情](https://github.com/meteorchenwu/meteor/blob/master/INSTALL.md)
 
 #### 六、问题
-[查看详情](https://github.com/meteorchenwu/meteor/blob/chenwu/PROBLOM.md)
+[查看详情](https://github.com/meteorchenwu/meteor/blob/master/PROBLOM.md)
