@@ -6,6 +6,7 @@
 * [java](#java)
 * [安装spark](#安装spark)
 * [安装kafka](#安装kafka)
+* [安装redis集群](#安装redis集群)
 
 创建spark用户和ssh无密码登录
 ---------------------
@@ -74,6 +75,7 @@ export SPARK_LOCAL_DIRS=/tmp
 ##### 9、cp spark-defaults.conf.template spark-defaults.conf
 ##### 10、启动spark集群：/data/apps/spark/sbin/start-all.sh，通过http://本机外网IP:8080
 ##### 11、关闭spark集群：/data/apps/spark/sbin/stop-all.sh
+<br />
 
 安装kafka
 ---------------------
@@ -86,7 +88,9 @@ export SPARK_LOCAL_DIRS=/tmp
 ##### 6、启动kafka：
 /data/apps/kafka/bin/kafka-server-start.sh /data/apps/kafka/config/server.properties > /tmp/startup_kafka.log 2>&1 &
 
-四、安装redis集群
+<br />
+安装redis集群
+---------------------
 1、下载redis-3.0.7：http://redis.io/download
 2、找一个临时目录，解压：tar -zxvf redis-3.0.7.tar.gz
 3、cd redis-3.0.7，执行make命令
