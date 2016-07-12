@@ -243,7 +243,7 @@ spark.executor.extraClassPath  /data/spark_lib_ext/*
 首次启动会因kafka的一些topic没有，报错而自动创建<br />
 可通过http://本机外网IP:4040查看
 
-##### 7、启动日志转发程序，也可以更改里面的源头，定制监控逻辑
+##### 7、启动日志转发程序，也可以更改里面PerformanceConsumerThread类的源码，定制监控逻辑
 用于把执行日志导回mysql，方便前台管理系统查看<br />
 java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/transfer/target/meteor-transfer-1.0-SNAPSHOT.war" "/" "8090" > transfer.log 2>&1 & 
 <br />
