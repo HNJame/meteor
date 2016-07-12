@@ -1,4 +1,4 @@
-package com.duowan.meteor.jetty.server;
+package com.meteor.jetty.server;
 
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.webapp.WebAppContext;
