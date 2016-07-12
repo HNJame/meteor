@@ -32,6 +32,7 @@ java
 ##### 4、cd /data/apps/spark/conf
 ##### 5、cp slaves.template slaves
 ##### 6、cp log4j.properties.template log4j.properties，并修改成如下:
+
 <pre>
 log4j.rootCategory=WARN, console
 log4j.appender.console=org.apache.log4j.ConsoleAppender
@@ -54,10 +55,8 @@ log4j.logger.org.apache.hadoop.hive.ql.exec.FunctionRegistry=ERROR
 log4j.logger.com.meteor=INFO
 </pre>
 
-<pre>
-7、mkdir -p /data/apps/spark/work/
-8、cp spark-env.sh.template spark-env.sh，并修改成如下:
-</pre>
+##### 7、mkdir -p /data/apps/spark/work/
+##### 8、cp spark-env.sh.template spark-env.sh，并修改成如下:
 
 <pre>
 export SPARK_DAEMON_MEMORY=512m
@@ -71,11 +70,9 @@ export SPARK_WORKER_DIR=$SPARK_HOME/work
 export SPARK_LOCAL_DIRS=/tmp
 </pre>
 
-<pre>
-9、cp spark-defaults.conf.template spark-defaults.conf
-10、启动spark集群：/data/apps/spark/sbin/start-all.sh，通过http://本机外网IP:8080
-11、关闭spark集群：/data/apps/spark/sbin/stop-all.sh
-</pre>
+##### 9、cp spark-defaults.conf.template spark-defaults.conf
+##### 10、启动spark集群：/data/apps/spark/sbin/start-all.sh，通过http://本机外网IP:8080
+##### 11、关闭spark集群：/data/apps/spark/sbin/stop-all.sh
 
 三、安装kafka
 1、下载kafka：https://www.apache.org/dyn/closer.cgi?path=/kafka/0.8.2.0/kafka_2.10-0.8.2.0.tgz
