@@ -20,7 +20,7 @@ public class ServiceConfigTool {
 	
 	public static String dwEnv = "prod";
 	
-	public static String kafkaConnectHost = "zk1:2181,zk2:2181,zk3:2181";
+	public static String kafkaConnectHost = "kafka1:2181";
 	public static String kafkaGroupId = "meteorTransfer";
 	
 	public static String kafkaFlowTopic = "instance_flow";
