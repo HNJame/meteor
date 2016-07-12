@@ -23,7 +23,7 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 </pre>
 
 #### 三、示意图
-![image](https://github.com/meteorchenwu/meteor/blob/chenwu/mc/src/main/webapp/img/overview.jpg)
+![image](https://github.com/meteorchenwu/meteor/blob/master/mc/src/main/webapp/img/overview.jpg)
 
 #### 四、理念
 <pre>
