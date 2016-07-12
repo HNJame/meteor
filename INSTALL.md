@@ -3,15 +3,16 @@
 以下安装说明，只是为了说明流程步骤，相关优化配置，自己按需调整。另外如果自己要用的spark、kafka、redis和cassandra是不同的版本，请相当修改本平台pom.xml里的驱动版本
 
 ##目录
-* [创建spark用户和ssh无密码登录](#创建spark用户和ssh无密码登录)
-* [java](#java)
-* [安装spark](#安装spark)
-* [安装kafka](#安装kafka)
-* [安装redis集群](#安装redis集群)
-* [安装cassandra](#安装cassandra)
-* [配置hosts](#配置hosts)
+* [一、创建spark用户和ssh无密码登录](#创建spark用户和ssh无密码登录)
+* [二、java](#java)
+* [三、安装spark](#安装spark)
+* [四、安装kafka](#安装kafka)
+* [五、安装redis集群](#安装redis集群)
+* [六、安装cassandra](#安装cassandra)
+* [七、配置hosts](#配置hosts)
+* [八、下载本平台源码，编译，启动](#下载本平台源码，编译，启动)
 
-创建spark用户和ssh无密码登录
+一、创建spark用户和ssh无密码登录
 ---------------------
 <pre>
 sudo -s su - root
@@ -25,12 +26,12 @@ ssh-keygen -t rsa（一直按空格键）
 cat /data/spark/.ssh/id_rsa.pub >> /data/spark/.ssh/authorized_keys
 </pre>
 
-java
+二、java
 ---------------------
 安装Java HotSpot 1.7
 <br />
 
-安装spark
+三、安装spark
 ---------------------
 ##### 1、下载spark：http://www.apache.org/dyn/closer.lua/spark/spark-1.6.2/spark-1.6.2-bin-hadoop2.4.tgz
 ##### 2、cd /data/apps/，把包放到这个目录下，解压：tar -zxvf spark-1.6.2-bin-hadoop2.4.tgz
@@ -81,7 +82,7 @@ export SPARK_LOCAL_DIRS=/tmp
 ##### 11、关闭spark集群：/data/apps/spark/sbin/stop-all.sh
 <br />
 
-安装kafka
+四、安装kafka
 ---------------------
 ##### 1、下载kafka：https://www.apache.org/dyn/closer.cgi?path=/kafka/0.8.2.0/kafka_2.10-0.8.2.0.tgz
 ##### 2、cd /data/apps/，把包放到这个目录下，解压：tar -zxvf kafka_2.10-0.8.2.0.tgz
@@ -91,9 +92,9 @@ export SPARK_LOCAL_DIRS=/tmp
 /data/apps/kafka/bin/zookeeper-server-start.sh /data/apps/kafka/config/zookeeper.properties > /tmp/startup_zookeeper.log 2>&1 &
 ##### 6、启动kafka：
 /data/apps/kafka/bin/kafka-server-start.sh /data/apps/kafka/config/server.properties > /tmp/startup_kafka.log 2>&1 &
-
 <br />
-安装redis集群
+
+五、安装redis集群
 ---------------------
 ##### 1、下载redis-3.0.7：http://redis.io/download
 ##### 2、找一个临时目录，解压：tar -zxvf redis-3.0.7.tar.gz
@@ -204,12 +205,12 @@ sudo -s su - spark
 /data/apps/redis/bin/redis-trib.rb create 127.0.0.1:6379 127.0.0.1:6380 127.0.0.1:6381
 </pre>
 
-安装cassandra
+六、安装cassandra
 ---------------------
 可选，涉及超大量级去重、join才需要用到，如基于历史数据算新UV，join成为新用户对应的来源渠道数据
 <br />
 
-配置host
+七、配置host
 ---------------------
 <pre>
 sudo -s su - root
@@ -221,7 +222,7 @@ vim /etc/hosts
 </pre>
 
 
-下载本平台源码，编译，启动
+八、下载本平台源码，编译，启动
 ---------------------
 ##### 1、下载该平台源码，假设本地路径为：/data/meteor，在你的mysql中执行如下sql脚本
 /data/meteor/doc/sql/create.sql<br />
