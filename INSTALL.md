@@ -22,7 +22,7 @@ cat /data/spark/.ssh/id_rsa.pub >> /data/spark/.ssh/authorized_keys
 
 java
 ---------------------
-安装Java HotSpot 1.7
+<pre>安装Java HotSpot 1.7</pre>
 
 安装spark
 ---------------------
@@ -34,6 +34,7 @@ java
 5、cp slaves.template slaves
 6、cp log4j.properties.template log4j.properties，并修改成如下:
 </pre>
+
 <pre>
 log4j.rootCategory=WARN, console
 log4j.appender.console=org.apache.log4j.ConsoleAppender
@@ -55,8 +56,12 @@ log4j.logger.org.apache.hadoop.hive.ql.exec.FunctionRegistry=ERROR
 
 log4j.logger.com.meteor=INFO
 </pre>
+
+<pre>
 7、mkdir -p /data/apps/spark/work/
 8、cp spark-env.sh.template spark-env.sh，并修改成如下:
+</pre>
+
 <pre>
 export SPARK_DAEMON_MEMORY=512m
 export JAVA_HOME=/usr/local/jdk
@@ -68,9 +73,12 @@ export SPARK_WORKER_DIR=$SPARK_HOME/work
 
 export SPARK_LOCAL_DIRS=/tmp
 </pre>
+
+<pre>
 9、cp spark-defaults.conf.template spark-defaults.conf
-10、启动spark集群（目前只有一个节点）：/data/apps/spark/sbin/start-all.sh，通过http://本机外网IP:8080访问集群首页（如果8080端口被其他程序占用，则用8081，依此类推）
+10、启动spark集群：/data/apps/spark/sbin/start-all.sh，通过http://本机外网IP:8080
 11、关闭spark集群：/data/apps/spark/sbin/stop-all.sh
+</pre>
 
 三、安装kafka
 1、下载kafka：https://www.apache.org/dyn/closer.cgi?path=/kafka/0.8.2.0/kafka_2.10-0.8.2.0.tgz
