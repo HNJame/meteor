@@ -38,30 +38,7 @@ cat /data/spark/.ssh/id_rsa.pub >> /data/spark/.ssh/authorized_keys
 ##### 3、ln -s spark-1.6.2-bin-hadoop2.4 spark
 ##### 4、cd /data/apps/spark/conf
 ##### 5、cp slaves.template slaves
-##### 6、cp log4j.properties.template log4j.properties，并修改成如下:
-
-<pre>
-log4j.rootCategory=WARN, console
-log4j.appender.console=org.apache.log4j.ConsoleAppender
-log4j.appender.console.target=System.err
-log4j.appender.console.layout=org.apache.log4j.PatternLayout
-log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n
-
-# Settings to quiet third party logs that are too verbose
-log4j.logger.org.spark-project.jetty=WARN
-log4j.logger.org.spark-project.jetty.util.component.AbstractLifeCycle=ERROR
-log4j.logger.org.apache.spark.repl.SparkIMain$exprTyper=WARN
-log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter=WARN
-log4j.logger.org.apache.parquet=ERROR
-log4j.logger.parquet=ERROR
-
-# SPARK-9183: Settings to avoid annoying messages when looking up nonexistent UDFs in SparkSQL with Hive support
-log4j.logger.org.apache.hadoop.hive.metastore.RetryingHMSHandler=FATAL
-log4j.logger.org.apache.hadoop.hive.ql.exec.FunctionRegistry=ERROR
-
-log4j.logger.com.meteor=INFO
-</pre>
-
+##### 6、cp log4j.properties.template log4j.properties
 ##### 7、mkdir -p /data/apps/spark/work/
 ##### 8、cp spark-env.sh.template spark-env.sh，并修改成如下:
 
