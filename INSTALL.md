@@ -3,14 +3,14 @@
 以下安装说明，只是为了说明流程步骤，相关优化配置，自己按需调整。另外如果自己要用的spark、kafka、redis和cassandra是不同的版本，请相当修改本平台pom.xml里的驱动版本
 
 ##目录
-* [一、创建spark用户和ssh无密码登录](#创建spark用户和ssh无密码登录)
-* [二、java](#java)
-* [三、安装spark](#安装spark)
-* [四、安装kafka](#安装kafka)
-* [五、安装redis集群](#安装redis集群)
-* [六、安装cassandra](#安装cassandra)
-* [七、配置hosts](#配置hosts)
-* [八、下载本平台源码，编译，启动](#下载本平台源码，编译，启动)
+* [一、创建spark用户和ssh无密码登录](#一、创建spark用户和ssh无密码登录)
+* [二、java](#二、java)
+* [三、安装spark](#三、安装spark)
+* [四、安装kafka](#四、安装kafka)
+* [五、安装redis集群](#五、安装redis集群)
+* [六、安装cassandra](#六、安装cassandra)
+* [七、配置hosts](#七、配置hosts)
+* [八、下载本平台源码，编译，启动](#八、下载本平台源码，编译，启动)
 
 一、创建spark用户和ssh无密码登录
 ---------------------
