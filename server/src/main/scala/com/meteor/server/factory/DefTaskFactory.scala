@@ -1,0 +1,50 @@
+package com.meteor.server.factory
+
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import org.apache.commons.lang3.SerializationUtils
+import com.meteor.model.custom.DefAllValid
+import com.meteor.model.view.AbstractBase
+import com.meteor.server.util.Logging
+import com.meteor.task.TaskManager
+import com.meteor.server.context.ExecutorContext
+
+object DefTaskFactory extends Logging {
+
+  var defAllValid: DefAllValid = _
+  val scheduledExecutor = Executors.newScheduledThreadPool(1)
+	var taskManager: TaskManager = _
+
+  def startup(): Unit = {
+    taskManager = TaskManager.getInstance(ExecutorContext.jdbcDriver, ExecutorContext.jdbcUrl, ExecutorContext.jdbcUsername, ExecutorContext.jdbcPassword)
+    getDefAllValid()
+    scheduledExecutor.scheduleAtFixedRate(new Runnable {
+      override def run(): Unit = {
+        try {
+          getDefAllValid()
+        } catch {
+          case e: Exception => logError("定时刷新任务定义失败", e)
+        }
+      }
+    }, 5, 2, TimeUnit.MINUTES)
+  }
+
+  def getDefAllValid(): Unit = {
+    logInfo("Does getDefAllValid")
+    val defAllValidData = taskManager.getDefAllValid
+    if (defAllValidData != null && !defAllValidData.getDefAllMap.isEmpty()) {
+      synchronized {
+        defAllValid = defAllValidData
+      }
+    }
+  }
+
+  def getCloneById(id: Integer): AbstractBase = {
+    var task: AbstractBase = null
+    synchronized {
+      task = defAllValid.getDefAllMap.get(id)
+    }
+    SerializationUtils.clone(task)
+  }
+
+}
