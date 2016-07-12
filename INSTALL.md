@@ -5,6 +5,7 @@
 * [创建spark用户和ssh无密码登录](#创建spark用户和ssh无密码登录)
 * [java](#java)
 * [安装spark](#安装spark)
+* [安装kafka](#安装kafka)
 
 创建spark用户和ssh无密码登录
 ---------------------
@@ -74,14 +75,15 @@ export SPARK_LOCAL_DIRS=/tmp
 ##### 10、启动spark集群：/data/apps/spark/sbin/start-all.sh，通过http://本机外网IP:8080
 ##### 11、关闭spark集群：/data/apps/spark/sbin/stop-all.sh
 
-三、安装kafka
-1、下载kafka：https://www.apache.org/dyn/closer.cgi?path=/kafka/0.8.2.0/kafka_2.10-0.8.2.0.tgz
-2、cd /data/apps/，把包放到这个目录下，解压：tar -zxvf kafka_2.10-0.8.2.0.tgz
-3、ln -s kafka_2.10-0.8.2.0 kafka
-4、vim /data/apps/kafka/conf/server.properties，增加配置auto.create.topics.enable=true
-5、启动zookeeper:
+安装kafka
+---------------------
+##### 1、下载kafka：https://www.apache.org/dyn/closer.cgi?path=/kafka/0.8.2.0/kafka_2.10-0.8.2.0.tgz
+##### 2、cd /data/apps/，把包放到这个目录下，解压：tar -zxvf kafka_2.10-0.8.2.0.tgz
+##### 3、ln -s kafka_2.10-0.8.2.0 kafka
+##### 4、vim /data/apps/kafka/conf/server.properties，增加配置auto.create.topics.enable=true
+##### 5、启动zookeeper:
 /data/apps/kafka/bin/zookeeper-server-start.sh /data/apps/kafka/config/zookeeper.properties > /tmp/startup_zookeeper.log 2>&1 &
-6、启动kafka：
+##### 6、启动kafka：
 /data/apps/kafka/bin/kafka-server-start.sh /data/apps/kafka/config/server.properties > /tmp/startup_kafka.log 2>&1 &
 
 四、安装redis集群
