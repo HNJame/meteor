@@ -6,7 +6,7 @@ import org.mortbay.jetty.webapp.WebAppContext;
 public class JettyServer {
 
 	/**
-	 * java -Xms512m -Xmx512m -cp /data/apps/meteor/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.duowan.meteor.jetty.server.JettyServer "/data/apps/meteor/meteor-rtview-1.0-SNAPSHOT.war" "/" "8888"
+	 * java -Xms512m -Xmx512m -cp /data/apps/meteor/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "xx.war" "/" "8888"
 	 * @param args
 	 * @throws Exception
 	 */
