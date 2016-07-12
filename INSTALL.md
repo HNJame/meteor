@@ -56,7 +56,6 @@ export SPARK_LOCAL_DIRS=/tmp
 
 ##### 9、cp spark-defaults.conf.template spark-defaults.conf
 ##### 10、启动spark集群：/data/apps/spark/sbin/start-all.sh，通过http://本机外网IP:8080
-##### 11、关闭spark集群：/data/apps/spark/sbin/stop-all.sh
 
 四、安装kafka
 ---------------------
