@@ -225,12 +225,12 @@ vim /etc/hosts
 ---------------------
 ##### 1、下载该平台源码，假设本地路径为：/data/meteor，在你的mysql中执行如下sql脚本
 /data/meteor/doc/sql/create.sql<br />
-/data/meteor/doc/sql/init_demo.sql<br /><br />
+/data/meteor/doc/sql/init_demo.sql<br />
 
 ##### 2、将/data/meteor/dao/src/main/resources/meteor-app.properties的内容，改为你的mysql连接信息
 
 ##### 3、打包，执行mvn clean install -Dmaven.test.skip=true
-其中下载scala包会很慢，因为是在国外的，可以从http://pan.baidu.com/s/1bpxBhrL这里下载并解压到你的maven respository/org/目录下
+其中下载scala包会很慢，因为是在国外的，可以从http://pan.baidu.com/s/1bpxBhrL 这里下载并解压到你的maven respository/org/目录下
 
 ##### 4、启动前台管理系统程序，通过http://x.x.x.x:8070 登录
 java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/mc/target/meteor-mc-1.0-SNAPSHOT.war" "/" "8070" > mc.log 2>&1 & <br />
