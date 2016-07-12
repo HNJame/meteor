@@ -6,9 +6,9 @@ import org.apache.spark.broadcast.Broadcast
 
 object ExecutorContext extends Serializable {
 
-	val cassandraClusterHosts = "cassandra1,cassandra2,cassandra3"
-  val redisClusterHostPorts = "redis1:6379,redis2:6379,redis3:6379"
-  val kafkaClusterHostPorts = "kafka1:9092,kafka2:9092,kafka3:9092"
+	val cassandraClusterHosts = "cassandra1"
+  val redisClusterHostPorts = "redis1:6379"
+  val kafkaClusterHostPorts = "kafka1:9092"
   
   var jdbcDriver: String = _
   var jdbcUrl: String = _
