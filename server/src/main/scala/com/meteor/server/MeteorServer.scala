@@ -136,7 +136,7 @@ object MeteorServer extends Logging {
   def regUDF(hiveContext: HiveContext): Unit = {
     logInfo("Startup regUDF")
 
-    hiveContext.sql("create temporary function c_json_tuple as 'com.duowan.hive.udf.udtf.CustomGenericUDTFJSONTuple'")
+    hiveContext.sql("create temporary function c_json_tuple as 'com.meteor.hive.udf.udtf.CustomGenericUDTFJSONTuple'")
 
     hiveContext.udf.register("c_uuid", () => {
       UUID.randomUUID().toString()
