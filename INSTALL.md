@@ -233,10 +233,11 @@ vim /etc/hosts
 其中下载scala包会很慢，因为是在国外的，可以从http://pan.baidu.com/s/1bpxBhrL这里下载并解压到你的maven respository/org/目录下
 
 ##### 4、启动前台管理系统程序，通过http://x.x.x.x:8070 登录
-java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/mc/target/meteor-mc-1.0-SNAPSHOT.war" "/" "8070" > mc.log 2>&1 & <br /><br />
+java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/mc/target/meteor-mc-1.0-SNAPSHOT.war" "/" "8070" > mc.log 2>&1 & <br />
+平台任务操作细节详情，可查看里面的帮助文档和表单注释<br />
 
 ##### 5、启动模拟源头数据程序
-java -Xms128m -Xmx128m -cp /data/meteor/demo/target/meteor-demo-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.demo.DemoSourceData <br /><br />
+java -Xms128m -Xmx128m -cp /data/meteor/demo/target/meteor-demo-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.demo.DemoSourceData <br />
 
 ##### 6、启动后台实时计算程序server
 1)按需修改/data/meteor/conf/meteor.properties<br />
