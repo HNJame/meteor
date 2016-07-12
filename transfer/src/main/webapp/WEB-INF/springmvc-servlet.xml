@@ -16,11 +16,15 @@
 	<!-- 自动搜索@Controller标注的类 -->
 	<context:component-scan base-package="com.meteor.transfer.controller" />
 
-	<!-- HandlerMapping生成器: 用于生成controllder至URL的映射,如 /user/create.do => UserController.create() -->
-	<bean
-		class="com.duowan.common.web.mvc.annotation.ConventionAnnotationHandlerMapping" />
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" />
 
+	<!-- ViewResolver -->
+	<bean class="org.springframework.web.servlet.view.BeanNameViewResolver" />
 	<bean
-		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" />
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+		<property name="prefix" value="/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
 
 </beans>

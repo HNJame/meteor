@@ -24,7 +24,7 @@
 
 	<listener>
 		<description>InitTransferListener</description>
-		<listener-class>com.duowan.meteor.transfer.listener.InitTransferListener</listener-class>
+		<listener-class>com.meteor.transfer.listener.InitTransferListener</listener-class>
 	</listener>
 
 	<!-- spring mvc START -->
