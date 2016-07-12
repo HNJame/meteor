@@ -7,6 +7,8 @@
 * [安装spark](#安装spark)
 * [安装kafka](#安装kafka)
 * [安装redis集群](#安装redis集群)
+* [安装cassandra](#安装cassandra)
+* [配置hosts](#配置hosts)
 
 创建spark用户和ssh无密码登录
 ---------------------
@@ -108,7 +110,7 @@ cp mkreleasehdr.sh redis-benchmark redis-check-aof redis-check-dump redis-cli re
 </pre>
 
 ##### 5、配置集群
-####### 节点1
+###### 节点1
 cp /data/apps/redis/conf/redis.conf /data/apps/redis/conf/redis-6379.conf<br />
 vim /data/apps/redis/conf/redis-6379.conf
 <pre>
@@ -131,7 +133,7 @@ cluster-enabled yes
 cluster-config-file /data/apps/redis/conf/nodes-6379.conf
 </pre>
 
-####### 节点2
+###### 节点2
 cp /data/apps/redis/conf/redis.conf /data/apps/redis/conf/redis-6380.conf<br />
 vim /data/apps/redis/conf/redis-6380.conf
 <pre>
@@ -154,7 +156,7 @@ cluster-enabled yes
 cluster-config-file /data/apps/redis/conf/nodes-6380.conf
 </pre>
 
-####### 节点3
+###### 节点3
 cp /data/apps/redis/conf/redis.conf /data/apps/redis/conf/redis-6381.conf<br />
 vim /data/apps/redis/conf/redis-6381.conf
 <pre>
@@ -177,33 +179,44 @@ cluster-enabled yes
 cluster-config-file /data/apps/redis/conf/nodes-6381.conf
 </pre>
 
-6、
+##### 6、启动各节点
+<pre>
 /data/apps/redis/bin/redis-server /data/apps/redis/conf/redis-6379.conf
 /data/apps/redis/bin/redis-server /data/apps/redis/conf/redis-6380.conf
 /data/apps/redis/bin/redis-server /data/apps/redis/conf/redis-6381.conf
+</pre>
 
-7、
+##### 7、装集群启动命令环境
+<pre>
 exit
 sudo -s su - root
 apt-get update
 apt-get install ruby1.9.3
 apt-get install rubygems
 gem install redis
+</pre>
 
-8、
+##### 8、构建集群
+<pre>
 sudo -s su - spark
 /data/apps/redis/bin/redis-trib.rb create 127.0.0.1:6379 127.0.0.1:6380 127.0.0.1:6381
+</pre>
 
-五、安装cassandra
+安装cassandra
+---------------------
 可选，涉及超大量级去重、join才需要用到，如基于历史数据算新UV，join成为新用户对应的来源渠道数据
+<br />
 
-六、配置host
+配置host
+---------------------
+<pre>
 sudo -s su - root
 vim /etc/hosts
 
-127.0.0.1 kafka1<br />
-127.0.0.1 redis1<br />
-127.0.0.1 cassandra1<br /><br />
+127.0.0.1 kafka1
+127.0.0.1 redis1
+127.0.0.1 cassandra1
+</pre>
 
 2、下载该平台源码，假设本地路径为：/data/meteor，在你的mysql中执行如下sql脚本<br />
 /data/meteor/doc/sql/create.sql<br />
