@@ -23,7 +23,7 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 </pre>
 
 #### 三、示意图
-![image](https://github.com/meteorchenwu/meteor/blob/chenwu/mc/src/main/webapp/img/overview.jpg)
+![image](https://github.com/meteorchenwu/meteor/blob/master/mc/src/main/webapp/img/overview.jpg)
 
 <pre>
 1、系统按固定间隔（如1min）去kafka拉数据，叫时间片数据。
@@ -33,8 +33,8 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 </pre>
 
 #### 四、demo安装示例
+[demo安装](https://github.com/meteorchenwu/meteor/blob/master/INSTALL.md)<br />
 [demo示例](https://github.com/meteorchenwu/chenwu/blob/master/DEMO.md)
-[demo安装示例](https://github.com/meteorchenwu/meteor/blob/master/INSTALL.md)
 
 #### 五、问题
 [查看详情](https://github.com/meteorchenwu/meteor/blob/master/PROBLOM.md)
