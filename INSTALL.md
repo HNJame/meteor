@@ -251,6 +251,10 @@ java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-
 ##### 8、查看统计结果
 /data/apps/kafka/bin/kafka-console-consumer.sh --zookeeper 127.0.0.1:2181 --topic uv_ref_hour
 
+##### 9、demo示例
+[查看详细](https://github.com/meteorchenwu/meteor/blob/master/DEMO.md)
+
+
 
 
 
