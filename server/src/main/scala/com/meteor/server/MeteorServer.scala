@@ -236,13 +236,13 @@ object MeteorServer extends Logging {
         val dataKey = table + "|" + parKey
         val localCacheResult = LocalCacheUtil.get(dataKey)
         if (localCacheResult == null) {
-          LocalCacheUtil.put(dataKey, value)
+          LocalCacheUtil.put(dataKey, "")
           if (!toCassandra) {
             result = RedisClusterUtil.setneex(dataKey, value, redisExpireSeconds)
           } else {
             val redisResult = RedisClusterUtil.exists(dataKey)
             if (!redisResult) {
-              RedisClusterUtil.setex(dataKey, value, redisExpireSeconds)
+              RedisClusterUtil.setex(dataKey, "", redisExpireSeconds)
               val session = CassandraContextSingleton.getSession()
               val tablePS = CassandraContextSingleton.getPreparedStatement(s"INSERT INTO $table (key, value) VALUES (?, ?) IF NOT EXISTS", table, cassandraExpireSeconds)
               val tableRS = session.execute(tablePS.bind(parKey, value))
@@ -272,7 +272,7 @@ object MeteorServer extends Logging {
       if (StringUtils.isNotBlank(partition)) {
         tablePartition = table + "_" + partition
       }
-      RedisClusterUtil.hget(tablePartition, key)
+      Option(RedisClusterUtil.hget(tablePartition, key)).getOrElse(0L)
     })
 
     hiveContext.udf.register("get_slot_time", (time: String, slot: Integer, sDateFormat: String, tDateFormat: String) => {
