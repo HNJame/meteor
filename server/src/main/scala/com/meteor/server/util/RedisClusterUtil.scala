@@ -55,7 +55,7 @@ object RedisClusterUtil extends Logging {
   }
 
   def hincrBy(hname: String, hkey: String, hval: Long, expireSeconds: Integer): Long = {
-    val result = jedisCluster.hincrBy(hname, hkey, hval)
+    val result = jedisCluster.hincrBy(hname, hkey, Option(hval).getOrElse(0L))
     expireMap.put(hname, expireSeconds)
     result
   }

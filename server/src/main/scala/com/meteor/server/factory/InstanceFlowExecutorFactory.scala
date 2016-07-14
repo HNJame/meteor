@@ -132,7 +132,7 @@ object InstanceFlowExecutorFactory extends Logging {
       tableNameSet.add(matcher.group(1))
     }
     for (tableName <- tableNameSet) {
-      targetFromSql = StringUtils.replacePattern(targetFromSql, s"(?i)\\s+from\\s+${tableName}", s" from ${tableName}_${instanceFlowId}")
+      targetFromSql = StringUtils.replacePattern(targetFromSql, s"(?i)\\s+from\\s+${tableName}(\\s" + "|$)", s" from ${tableName}_${instanceFlowId} ")
     }
     targetFromSql
   }
