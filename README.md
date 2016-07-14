@@ -25,7 +25,6 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 #### 三、示意图
 ![image](https://github.com/meteorchenwu/meteor/blob/master/mc/src/main/webapp/img/overview.jpg)
 
-#### 四、理念
 <pre>
 1、系统按固定间隔（如1min）去kafka拉数据，叫时间片数据。
 2、系统将各时间片数据转换成表，基于hive sql进行运算。
@@ -33,8 +32,9 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等等，都可�
 4、通过函数：c_sum，c_distinct，c_join，c_max和c_min。利用redis或cassandra,对所有时间片进行全局运算。
 </pre>
 
-#### 五、安装和demo示例
-[查看详情](https://github.com/meteorchenwu/meteor/blob/master/INSTALL.md)
+#### 四、demo安装示例
+[demo安装](https://github.com/meteorchenwu/meteor/blob/master/INSTALL.md)<br />
+[demo示例](https://github.com/meteorchenwu/chenwu/blob/master/DEMO.md)
 
-#### 六、问题
+#### 五、问题
 [查看详情](https://github.com/meteorchenwu/meteor/blob/master/PROBLOM.md)
