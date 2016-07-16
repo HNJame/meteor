@@ -89,7 +89,7 @@ where c_distinct('db1.table1_distinct_join', false, 0, 90000, stime_yyyyMMdd, CO
     '"num":"', num, '"'
   '}')
 )
-
+</pre>
 
 4、join
 --------------------
