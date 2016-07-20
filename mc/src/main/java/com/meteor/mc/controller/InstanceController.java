@@ -121,12 +121,6 @@ public class InstanceController {
 		query.setFirstIndex(firstIndex);
 		query.setPageCount(pageCount);
 		List<InstanceTaskDB> instanceTasks = instanceTaskService.getByQuery(query);
-		if (instanceTasks != null) {
-			for (InstanceTaskDB instanceTaskDB : instanceTasks) {
-				DefFileSys defFileSys = defFileSysService.getById(instanceTaskDB.getFileId());
-				instanceTaskDB.setUpdateTime(defFileSys.getUpdateTime());
-			}
-		}
 		DefFileSys defFileSys = defFileSysService.getById(query.getFileId());
 
 		model.put("instanceTasks", instanceTasks);

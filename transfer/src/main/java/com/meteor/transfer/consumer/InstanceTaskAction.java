@@ -47,6 +47,8 @@ public class InstanceTaskAction extends ConsumerAction {
 			instanceDB.setLog(instance.getLog());
 			instanceDB.setPoolActiveCount(instance.getPoolActiveCount());
 			instanceDB.setPoolQueueSize(instance.getPoolQueueSize());
+			instanceDB.setUpdateTime(defFileSys.getUpdateTime());
+			instanceDB.setUpdateUser(defFileSys.getUpdateUser());
 			instanceTaskDBList.add(instanceDB);
 		}
 		ServiceConfigTool.instanceTaskService.batchInsert(instanceTaskDBList);
