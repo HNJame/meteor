@@ -18,6 +18,7 @@ import com.meteor.model.view.AbstractBase;
 import com.meteor.model.view.buildmodel.SqlTask;
 import com.meteor.model.view.cron.CronTask;
 import com.meteor.model.view.export.ExportCassandraTask;
+import com.meteor.model.view.export.ExportJDBCTask;
 import com.meteor.model.view.export.ExportKafkaTask;
 import com.meteor.model.view.export.ExportRedisTask;
 import com.meteor.model.view.importcassandra.ImportHiveToCassandraTask;
@@ -93,6 +94,11 @@ public class TaskController extends UserBaseController {
 	
 	@RequestMapping("/writeExportKafkaTask.do")
 	public String writeExportKafkaTask(ModelMap model, ExportKafkaTask defFileTask, String targetAfterSubmitForm) throws Exception {
+		return write(model, defFileTask, targetAfterSubmitForm);
+	}
+	
+	@RequestMapping("/writeExportJDBCTask.do")
+	public String writeExportJDBCTask(ModelMap model, ExportJDBCTask defFileTask, String targetAfterSubmitForm) throws Exception {
 		return write(model, defFileTask, targetAfterSubmitForm);
 	}
 	

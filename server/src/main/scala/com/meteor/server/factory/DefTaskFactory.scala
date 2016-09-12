@@ -8,6 +8,7 @@ import com.meteor.model.view.AbstractBase
 import com.meteor.server.util.Logging
 import com.meteor.task.TaskManager
 import com.meteor.server.context.ExecutorContext
+import com.meteor.model.view.AbstractTaskDepend
 
 object DefTaskFactory extends Logging {
 
@@ -33,6 +34,22 @@ object DefTaskFactory extends Logging {
     logInfo("Does getDefAllValid")
     val defAllValidData = taskManager.getDefAllValid
     if (defAllValidData != null && !defAllValidData.getDefAllMap.isEmpty()) {
+      
+      for(taskId <- ExecutorContext.excludeTaskIds) {
+        defAllValidData.getCronSet.remove(taskId)
+        defAllValidData.getImportQueueSet.remove(taskId)
+        val task = defAllValidData.getDefAllMap.get(taskId).asInstanceOf[AbstractTaskDepend]
+        if(task != null) {
+          for(preTaskId <- task.getPreDependSet.toArray()) {
+            defAllValidData.getDefAllMap.get(preTaskId).asInstanceOf[AbstractTaskDepend].getPostDependSet.remove(taskId)
+          }
+          for(postTaskId <- task.getPostDependSet.toArray()) {
+            defAllValidData.getDefAllMap.get(postTaskId).asInstanceOf[AbstractTaskDepend].getPreDependSet.remove(taskId)
+          }
+          defAllValidData.getDefAllMap.remove(taskId)
+        }
+      }
+      
       synchronized {
         defAllValid = defAllValidData
       }

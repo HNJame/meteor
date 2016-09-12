@@ -16,7 +16,7 @@ import kafka.producer.KeyedMessage
 /**
  * Created by Administrator on 2015/8/19 0019.
  */
-object PerformanceUtil extends Serializable with Logging {
+object PerformanceUtil extends Logging {
 
   def sendData(jsonRow: String, fileId: Integer): Unit = {
     TaskThreadPoolFactory.cachedThreadPool.submit(new Runnable {

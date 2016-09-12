@@ -47,7 +47,7 @@ class InstanceTaskExecutor extends Serializable with Logging {
         var retriedTimes = -1
         while (retriedTimes < task.getMaxRetryTimes) {
           try {
-            //            ExecutorContext.streamContext.sparkContext.setLocalProperty("spark.scheduler.pool", task.getPriority.toString())
+            ExecutorContext.streamContext.sparkContext.setLocalProperty("spark.scheduler.pool", task.getPriority.toString())
             executor.exec(instanceTaskExecutor, paramMap)
             instanceTask.setStatus(ExecStatus.Success.name())
             retriedTimes = task.getMaxRetryTimes

@@ -4,6 +4,7 @@ import com.meteor.model.view.buildmodel.SqlTask;
 import com.meteor.model.view.cron.CronTask;
 import com.meteor.model.view.export.ExportCassandraTask;
 import com.meteor.model.view.export.ExportCassandraToHiveTask;
+import com.meteor.model.view.export.ExportJDBCTask;
 import com.meteor.model.view.export.ExportKafkaTask;
 import com.meteor.model.view.export.ExportRedisTask;
 import com.meteor.model.view.importcassandra.ImportHiveToCassandraTask;
@@ -22,7 +23,7 @@ public enum FileType {
 	
 	SqlTask(FileTypeCategory.BuildModel, SqlTask.class),
 	
-	ExportKafka(FileTypeCategory.Export, ExportKafkaTask.class), ExportCassandra(FileTypeCategory.Export, ExportCassandraTask.class), ExportRedis(FileTypeCategory.Export, ExportRedisTask.class),
+	ExportKafka(FileTypeCategory.Export, ExportKafkaTask.class), ExportCassandra(FileTypeCategory.Export, ExportCassandraTask.class), ExportRedis(FileTypeCategory.Export, ExportRedisTask.class), ExportJDBC(FileTypeCategory.Export, ExportJDBCTask.class),
 	
 	Cron(FileTypeCategory.Cron, CronTask.class),
 

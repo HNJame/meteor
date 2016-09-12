@@ -51,7 +51,7 @@ export SPARK_WORKER_CORES=60
 export SPARK_WORKER_MEMORY=2g
 export SPARK_WORKER_DIR=$SPARK_HOME/work
 
-export SPARK_LOCAL_DIRS=/tmp
+export SPARK_LOCAL_DIRS=/tmp（或者如果是ubuntu，内存有多余的情况下，直接用tmpfs内存目录：/run/shm，提升shuffle性能）
 </pre>
 
 ##### 9、cp spark-defaults.conf.template spark-defaults.conf
@@ -140,7 +140,7 @@ vim /data/apps/redis/conf/redis-6381.conf
 <pre>
 daemonize yes
 pidfile /var/run/redis-6381.pid
-port 6380
+port 6381
 
 #save 900 1
 #save 300 10
@@ -182,7 +182,7 @@ sudo -s su - spark
 
 六、安装cassandra
 ---------------------
-可选，涉及超大量级去重、join才需要用到，如基于历史数据算新UV，join成为新用户对应的来源渠道数据
+可选，涉及超大量级去重、join才需要用到，如基于历史数据算新UV，join成为新用户对应的来源渠道数据。
 <br />
 
 七、配置host
@@ -192,8 +192,8 @@ sudo -s su - root
 vim /etc/hosts
 
 127.0.0.1 kafka1
-127.0.0.1 redis1
-127.0.0.1 cassandra1
+127.0.0.1 kafka2
+127.0.0.1 kafka3
 </pre>
 
 
@@ -209,18 +209,19 @@ vim /etc/hosts
 其中下载scala包会很慢，因为是在国外的，可以从http://pan.baidu.com/s/1bpxBhrL 这里下载并解压到你的maven respository/org/目录下
 
 ##### 4、启动前台管理系统程序，通过http://x.x.x.x:8070 登录
-java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/mc/target/meteor-mc-1.0-SNAPSHOT.war" "/" "8070" > mc.log 2>&1 & 
+java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-2.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/mc/target/meteor-mc-2.0-SNAPSHOT.war" "/" "8070" > mc.log 2>&1 & 
 <br />
 平台任务操作细节详情，可查看里面的帮助文档和表单注释<br />
 
 ##### 5、启动模拟源头数据程序
-java -Xms128m -Xmx128m -cp /data/meteor/demo/target/meteor-demo-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.demo.DemoSourceData
+java -Xms128m -Xmx128m -cp /data/meteor/demo/target/meteor-demo-2.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.demo.DemoSourceData
 <br />
 
 ##### 6、启动后台实时计算程序server
-1)按需修改/data/meteor/conf/meteor.properties<br />
-2)cp /data/meteor/hiveudf/target/meteor-hiveudf-1.0-SNAPSHOT-jar-with-dependencies.jar /data/spark_lib_ext/<br />
+1)按需修改/data/meteor/conf/meteor.properties, 并复制到/data/apps/spark/conf目录<br />
+2)cp /data/meteor/hiveudf/target/meteor-hiveudf-2.0-SNAPSHOT-jar-with-dependencies.jar /data/spark_lib_ext/<br />
 3)cp /data/meteor/conf/log4j.properties /data/apps/spark/conf/<br />
+4)cp /data/meteor/conf/fairscheduler.xml /data/apps/spark/conf/<br />
 4)vim /data/apps/spark/conf/spark-defaults.conf<br />
 <pre>
 spark.driver.extraClassPath  /data/spark_lib_ext/*
@@ -237,22 +238,21 @@ spark.executor.extraClassPath  /data/spark_lib_ext/*
   --driver-memory 1G \
   --supervise \
   --verbose \
-  /data/meteor/server/target/meteor-server-1.0-SNAPSHOT-jar-with-dependencies.jar \
-  "/data/meteor/conf/meteor.properties"
+  /data/meteor/server/target/meteor-server-2.0-SNAPSHOT-jar-with-dependencies.jar \
+  "/data/apps/spark/conf/meteor.properties"
 </pre>
 首次启动会因kafka的一些topic没有，报错而自动创建<br />
 可通过http://本机外网IP:4040查看
 
 ##### 7、启动日志转发程序，也可以更改里面PerformanceConsumerThread类的源码，定制监控逻辑
 用于把执行日志导回mysql，方便前台管理系统查看<br />
-java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-1.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/transfer/target/meteor-transfer-1.0-SNAPSHOT.war" "/" "8090" > transfer.log 2>&1 & 
+java -Xms128m -Xmx128m -cp /data/meteor/jetty-server/target/meteor-jetty-server-2.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.jetty.server.JettyServer "/data/meteor/transfer/target/meteor-transfer-2.0-SNAPSHOT.war" "/" "8090" > transfer.log 2>&1 & 
 <br />
 
 ##### 8、查看统计结果
 /data/apps/kafka/bin/kafka-console-consumer.sh --zookeeper 127.0.0.1:2181 --topic uv_ref_hour
 
-##### 9、demo示例
-[查看详细](https://github.com/meteorchenwu/meteor/blob/master/DEMO.md)
+
 
 
 

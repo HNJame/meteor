@@ -65,10 +65,10 @@
 					<form action="${ctx}/login.do" method="post" id="loginform">
 						<h2>流星-实时数据开发平台</h2>
 						<p>
-							<input type="text" name="passport" placeholder="passport"  value=""/>
+							<input type="text" name="passport" placeholder="passport"  value="admin"/>
 						</p>
 						<p>
-							<input type="password" name="password" placeholder="password"  value=""/>
+							<input type="password" name="password" placeholder="password"  value="admin"/>
 						</p>
 						<section class="row-fluid">
 							<div class="span8 checkbox">

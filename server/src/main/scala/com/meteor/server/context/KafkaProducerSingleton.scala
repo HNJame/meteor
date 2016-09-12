@@ -27,7 +27,7 @@ object KafkaProducerSingleton {
       props.put("metadata.broker.list", brokers)
       props.put("serializer.class", "kafka.serializer.StringEncoder")
       props.put("partitioner.class", "kafka.producer.DefaultPartitioner")
-      props.put("request.required.acks", "1")
+      props.put("request.required.acks", "0")
       val config = new ProducerConfig(props)
       producer = new Producer[String, String](config)
       producerStrMap += key -> producer
