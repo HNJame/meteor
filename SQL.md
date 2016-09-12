@@ -5,11 +5,14 @@ sql帮助文档
 
 ##目录
 * [1、生成中间表](#1生成中间表)
-* [2、累加c_sum](#2累加c_sum)
-* [3、去重c_distinct](#3去重c_distinct)
-* [4、join](#4join)
-* [5、max](#5max)
-* [6、min](#6min)
+* [2、count distinct](#2count distinct)
+* [3、累加c_sum](#3累加c_sum)
+* [4、max](#4max)
+* [5、min](#5min)
+* [6、去重c_distinct](#6去重c_distinct)
+* [7、join](#7join)
+* [8、csql_group_by_n自定义groupBy](#8csql_group_by_n自定义groupBy)
+
 
 
 1、生成中间表
@@ -20,68 +23,128 @@ sql帮助文档
 <pre>
 2)示例：
 cache table dwd_table1 as
-select col1, col2, uid, num, stime_yyyyMMdd, stime_yyyyMMddHH
+select col1, col2, uid, num, stime_yyyyMMdd, stime_yyyyMMddHH, CAST(1 AS BIGINT) count_value
 from ods_table1
 where col1='xx'
 </pre>
 
 
-2、累加c_sum
+2、count distinct
+---------------------------
+<pre>
+1)语法：c_counst_distinct(table: String, key(keyCol: String, ...), value(valueCol: String, ...), batchSize:Integer, resultNThreads: Integer, redisExpireSeconds: Integer, isAccurate: Boolean)
+在sql最前面需要包含“csql_group_by_n:”关键字
+
+table：为用哪个唯一表做去重计数，原理是redis的set集合或hyperloglog的名字前半部分。
+key：相当于group by的字段，多个字段在key里用逗号分隔。原理是redis的set集合或hyperloglog的名字后半部分。
+value：相当于做count distinct的字段，多个字段在value里用逗号分隔。原理是redis的set集合或hyperloglog里面的值。
+batchSize：每个group by成员，提交去重明细至redis的批量大小，一般填1000就行了。
+resultNThreads：访问redis的并行度，一般用1就行了。
+redisExpireSeconds：为当前表当前分区的过期清除时间，单位秒。如天分区可以设为25h=90000s，小时分区可以设为2h=7200s。原理是redis的hashmap的过期时间。
+isAccurate：是否精确去重，true为使用redis的set集合精确去重；false为使用hyperloglog高精确度去重，节省redis的内存使用。
+</pre>
+
+<pre>
+2)示例：
+csql_group_by_n:
+select stime_yyyyMMdd, col1, col2, 
+  c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
+from dwd_table1
+group by stime_yyyyMMdd, col1, col2
+</pre>
+
+
+3、累加c_sum
 ---------------------------
 <pre>
 等同于sum和count
-1)语法：c_sum(table: String, partition: String, key: String, value: Long, redisExpireSeconds: Integer)
+1)语法：c_sum(table: String, partition: String, key(keyCol: String, ...), value: Long, resultNThreads: Integer, redisExpireSeconds: Integer)
+在sql最前面需要包含“csql_group_by_n:”关键字
 
 table：为用哪个唯一表做全量累加，原理是redis的hashmap的名字前半部分。
 partition：为用哪个字段做表的分区(一般用统一的时间字段，如能表示天或小时)，相当于group by的其中一个字段。原理是redis的hashmap的名字后半部分。
-key：相当于做累加的group by剩余字段，多个字段用concat加竖线分隔。原理是redis的hashmap的内部的key值。
-value：为累加的值。需要乘以1L，转为Long类型。原理是redis的hashmap做hincrby的value值。
+key：相当于做累加的group by剩余字段，多个字段在key里用逗号分隔。原理是redis的hashmap的内部的key值。
+value：为累加的值。原理是redis的hashmap做hincrby的value值。
+resultNThreads：访问redis的并行度，一般用1就行了。
 redisExpireSeconds：为当前表当前分区的过期清除时间，单位秒。如天分区可以设为25h=90000s，小时分区可以设为2h=7200s。原理是redis的hashmap的过期时间。
 </pre>
 
 <pre>
 2)示例：
-select col1, col2, 
-  c_sum('db1.table1_sum', stime_yyyyMMdd, CONCAT(col1, '|', col2), sum(num)*1L, 90000) sum_result,
-  c_sum('db1.table1_count', stime_yyyyMMdd, CONCAT(col1, '|', col2), count(1)*1L, 90000) count_result
+csql_group_by_n:
+select stime_yyyyMMdd, col1, col2, 
+  c_sum('db1.table1_sum', stime_yyyyMMdd, key(col1, col2), num, 1, 90000) sum_result,
+  c_sum('db1.table1_count', stime_yyyyMMdd, key(col1, col2), count_value, 1, 90000) count_result
 from dwd_table1
 group by stime_yyyyMMdd, col1, col2
+</pre>
 
-上述sql的含义是先做当前时间片的group by统计，再用c_sum函数做当天全量的统计。
+4、max
+-----------------------
+<pre>
+1)语法：c_max(table: String, key(keyCol: String, ...), value: Long, resultNThreads: Integer, redisExpireSeconds: Integer)
+在sql最前面需要包含“csql_group_by_n:”关键字
+
+table：用哪个唯一表做全量max，原理是redis的sort set的名字前半部分。
+key：相当于做max的group by的字段，多个字段在key里用逗号分隔。原理是redis的sort set的名字后半部分
+value：要做max的数字。
+resultNThreads：访问redis的并行度，一般用1就行了。
+redisExpireSeconds：为当前表当前分区的过期清除时间，单位秒。如天分区可以设为25h=90000s，小时分区可以设为2h=7200s。原理是redis的hashmap的过期时间。
+</pre>
+
+<pre>
+2)示例：
+csql_group_by_n:
+select stime_yyyyMMdd, col1, col2, 
+  c_max('db1.table1_max', key(stime_yyyyMMdd, col1, col2), num, 1, 90000) max_result
+from dwd_table1
+group by stime_yyyyMMdd, col1, col2
 </pre>
 
 
-3、去重c_distinct
+5、min
+---------------------------
+<pre>
+1)语法：c_min(table: String, key(keyCol: String, ...), value: Long, resultNThreads: Integer, redisExpireSeconds: Integer)
+在sql最前面需要包含“csql_group_by_n:”关键字
+
+table：用哪个唯一表做全量min，原理是redis的sort set的名字前半部分。
+key：相当于做min的group by的字段，多个字段在key里用逗号分隔。原理是redis的sort set的名字后半部分
+value：要做min的数字。
+resultNThreads：访问redis的并行度，一般用1就行了。
+redisExpireSeconds：为当前表当前分区的过期清除时间，单位秒。如天分区可以设为25h=90000s，小时分区可以设为2h=7200s。原理是redis的hashmap的过期时间。
+</pre>
+
+<pre>
+2)示例：
+csql_group_by_n:
+select stime_yyyyMMdd, col1, col2, 
+  c_max('db1.table1_min', key(stime_yyyyMMdd, col1, col2), num, 1, 90000) max_result
+from dwd_table1
+group by stime_yyyyMMdd, col1, col2
+</pre>
+
+
+6、去重c_distinct
 ---------------------
 <pre>
-可以配合c_sum做count(distinct x)，也可以生成用于join的数据
-1)语法：c_distinct(table: String, toCassandra: Boolean, cassandraExpireSeconds: Integer, redisExpireSeconds: Integer, partition: String, key: String, value: String)
-当前唯一返回true，不唯一返回false
+1)语法：c_distinct(table: String, redisExpireSeconds: Integer, useCassandra: Boolean, cassandraExpireSeconds: Integer, partition: String, key: String, value: String)
+当前唯一返回1，不唯一返回0
 
 table:为用哪个唯一表做全量去重
-toCassandra：false表示只用redis做去重（性能更优）。true表示在cassandra做去重，并在上面搭一层redis缓存（能支持超大数据量，如算历史新用户）。无论为true或false，数据在redis中为set "table|partition|key" "value".
-cassandraExpireSeconds：当toCassandra=true有效，表示数据在cassandra的过期时间，单位秒，0表示永不过期。如天分区可以设为25h=90000s，小时分区可以设为2h=7200s。
 redisExpireSeconds：为当前数据在redis的过期清除时间，单位秒。如天分区可以设为25h=90000s，小时分区可以设为2h=7200s。原理是redis的key的过期时间。
+useCassandra：false表示只用redis做去重（性能更优）。true表示在cassandra做去重，并在上面搭一层redis缓存（能支持超大数据量，如算历史新用户）。无论为true或false，数据在redis中为set "table|partition|key" "value".
+cassandraExpireSeconds：当toCassandra=true有效，表示数据在cassandra的过期时间，单位秒，0表示永不过期。如天分区可以设为25h=90000s，小时分区可以设为2h=7200s。
 partition：为用哪个字段做表的分区(一般用统一的时间字段，如能表示天或小时).
 key：表示在分区partition的基础上，用哪些值做去重，多个字段用concat加竖线分隔。
-value：必须为json格式字符串，或空字符串''。可以固定死''空字符串，表示存到表中的value字段，后续可配合下面第4点作join用。
+value：必须为json格式字符串，或空字符串''。可以固定死''空字符串，表示存到表中的value字段，后续可配合下面的c_join用。
 </pre>
 
 <pre>
-2)示例1：count(distinct x)
-select col1, col2, 
-  c_sum('db1.table1_count_distinct', stime_yyyyMMdd, CONCAT(col1, '|', col2), 1L, 90000) count_distinct_result
-from dwd_table1
-where c_distinct('db1.table1_distinct', false, 0, 90000, stime_yyyyMMdd, CONCAT(col1, '|', col2, '|', uid), '')
-
-上述sql先用c_distinct去重，如果是唯一，则用c_sum累加1L
-</pre>
-
-<pre>
-3)示例2：去重算新用户，并生成join表，配合下面第4点作join用
+2)示例：去重算新用户，并生成join表，配合下面第4点作join用
 select col1, col2, uid, num
 from dwd_table1
-where c_distinct('db1.table1_distinct_join', false, 0, 90000, stime_yyyyMMdd, CONCAT(col1, '|', col2, '|', uid), 
+where c_distinct('db1.table1_distinct_join', 90000, false, 0, stime_yyyyMMdd, CONCAT_WS('|', col1, col2, uid), 
   CONCAT('{',
     '"col1":"', col1, '",'
     '"col2":"', col2, '",'
@@ -91,16 +154,19 @@ where c_distinct('db1.table1_distinct_join', false, 0, 90000, stime_yyyyMMdd, CO
 )
 </pre>
 
-4、join
+
+7、join
 --------------------
 <pre>
-1)语法：c_join(table: String, toCassandra: Boolean, useLocalCache: Boolean, cassandraExpireSeconds: Integer, redisExpireSeconds: Integer, partition: String, key: String)
+1)语法：c_join(table: String, useLocalCache: Boolean, cacheEmpty: Boolean, useRedis: Boolean, redisExpireSeconds: Integer, useCassandra: Boolean, cassandraExpireSeconds: Integer, partition: String, key: String)
 
 table：join的表名，该表必须redis或cassandra中。
-toCassandra：join的表，是否在cassandra中，是用true，否用false。
 useLocalCache：join的数据是否缓存在集群的各台机器本地，一般用true，可以提高性能。
+cacheEmpty：若当次join的数据不存在redis或cassandra里，是否存一个空的值在本地缓存，以便下次不用再去访问redis或cassandra。一般用true，可以提高性能。
+useRedis：是否使用redis
+redisExpireSeconds：join的数据，从cassandra缓存至redis中，在redis中缓存的过期时间，单位秒。一般设置30min=1800s.
+useCassandra：join的表，是否在cassandra中，是用true，否用false。
 cassandraExpireSeconds：数据在cassandra中的过期清除时间，单位秒，0表示永不过期。如天分区可以设为25h=90000s，小时分区可以设为2h=7200s。当toCassandra=true时有效，假如join的表在cassandra还不存在，系统则自动根据table名和当前参数创建。
-redisExpireSeconds：join的数据在redis中缓存的过期时间，单位秒。一般设置30min=1800s.
 partition：join的表分区(一般用统一的时间字段，如能表示天或小时)。
 key: join的主键，只支持主键join。多个字段用concat加竖线分隔。
 </pre>
@@ -120,49 +186,46 @@ c、创建“维表定时刷新(用于join)”类别任务
 4)示例：
 select t1.col1, t1.col2, t1.uid, jt_col1, jt_col2, jt_uid, jt_num
 from dwd_table2 t1
-LATERAL VIEW c_json_tuple(c_join('db1.dwd_table1', false, true, 0, 1800, t1.stime_yyyyMMdd, CONCAT(t1.col1, '|', t1.col2, '|', t1.uid)), 'col1', 'col2', 'uid', 'num') jt as jt_col1, jt_col2, jt_uid, jt_num
+LATERAL VIEW c_json_tuple(c_join('db1.dwd_table1', true, true, true, 1800, false, 0, t1.stime_yyyyMMdd, CONCAT_WS('|', t1.col1, t1.col2, t1.uid)), 'col1', 'col2', 'uid', 'num') jt as jt_col1, jt_col2, jt_uid, jt_num
 </pre>
 
 
-5、max
------------------------
+8、csql_group_by_n自定义groupBy
+--------------------
 <pre>
-1)语法：c_max(table: String, partition: String, value: Long, redisExpireSeconds: Integer)
+1)通过在sql最前面带上“csql_group_by_n:”，可改造spark原有group by的执行逻辑（用shuffle，涉及数据排序，网络交互，读写磁盘），使执行group by时，各分区独立跟redis之类交互，不需要shuffle。从而使性能提升10倍以上
 
-table：用哪个唯一表做全量max，原理是redis的sort set的名字前半部分。
-partition：为用哪个字段做表的分区(一般用统一的时间字段，如能表示天或小时)，相当于group by的其中一个字段。原理是redis的sort set的名字后半部分。
-value：要做max的数字。
-redisExpireSeconds：为当前表当前分区的过期清除时间，单位秒。如天分区可以设为25h=90000s，小时分区可以设为2h=7200s。原理是redis的sort set的过期时间。
+2)模块
+a、模块一
+	csql_group_by_n:
+	select stime_yyyyMMdd, col1, col2, 
+	  c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
+	from dwd_table1
+	group by stime_yyyyMMdd, col1, col2
+
+b、模块二：用spark原有的group by对结果再做一次聚合，从而减少结果的输出量
+	csql_group_by_n:
+	select stime_yyyyMMdd, col1, col2, 
+	  c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
+	from dwd_table1
+	group by stime_yyyyMMdd, col1, col2
+	;
+	select stime_yyyyMMdd, col1, col2, MAX(cd_result) cd_result
+	from $targetTable
+	group by stime_yyyyMMdd, col1, col2
+
+c、模块三：在模型构建sql功能中，把自定义group by后的执行结果cache起来
+	csql_group_by_n:
+	select stime_yyyyMMdd, col1, col2, 
+	  c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
+	from dwd_table1
+	group by stime_yyyyMMdd, col1, col2
+	;
+	cache table test_table1 as 
+	select *
+	from $targetTable
 </pre>
 
-<pre>
-2)示例：
-select col1, col2, 
-  c_max('db1.table1_max', stime_yyyyMMdd, max(num), 90000) max_result
-from dwd_table1
-group by col1, col2
-
-上述sql的含义是先做当前时间片的group by统计，再用c_max函数做当天全量的统计。
-</pre>
 
 
-6、min
----------------------------
-<pre>
-1)语法：c_min(table: String, partition: String, value: Long, redisExpireSeconds: Integer)
 
-table：用哪个唯一表做全量min，原理是redis的sort set的名字前半部分。
-partition：为用哪个字段做表的分区(一般用统一的时间字段，如能表示天或小时)，相当于group by的其中一个字段。原理是redis的sort set的名字后半部分。
-value：要做min的数字。
-redisExpireSeconds：为当前表当前分区的过期清除时间，单位秒。如天分区可以设为25h=90000s，小时分区可以设为2h=7200s。原理是redis的sort set的过期时间。
-</pre>
-
-<pre>
-2)示例：
-select col1, col2, 
-  c_min('db1.table1_max', stime_yyyyMMdd, min(num), 90000) min_result
-from dwd_table1
-group by col1, col2
-
-上述sql的含义是先做当前时间片的group by统计，再用c_min函数做当天全量的统计。
-</pre>

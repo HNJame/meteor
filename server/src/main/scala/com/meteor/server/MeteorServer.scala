@@ -37,7 +37,6 @@ import com.meteor.server.factory.InstanceFlowExecutorObjectPool
 import com.meteor.server.factory.TaskThreadPoolFactory
 import com.meteor.server.util.LocalCacheUtil
 import com.meteor.server.util.Logging
-import com.meteor.server.util.PropertiesUtil
 import com.meteor.server.util.RedisClusterUtil
 
 import kafka.serializer.StringDecoder
@@ -45,32 +44,11 @@ import kafka.serializer.StringDecoder
 object MeteorServer extends Logging {
 
   def main(args: Array[String]) {
-    logInfo("Starting MeteorServer!")
-    if (args.length != 1) {
-      System.err.println("MeterorServer <PropertiesFile>");
-      System.exit(1);
-    }
-    PropertiesUtil.load(args(0))
-
-    ExecutorContext.execCronTaskOnStartup = PropertiesUtil.get("meteor.execCronTaskOnStartup", "false")
-
-    val sparkConf = new SparkConf().setAppName(PropertiesUtil.get("meteor.appName", "MeteorServer"))
-    val patchSecond = Integer.parseInt(PropertiesUtil.get("meteor.patchSecond", "60"))
-
-    val streamContext = new StreamingContext(sparkConf, Seconds(patchSecond))
+    val sparkConf = new SparkConf().setAppName(ExecutorContext.appName)
+    val streamContext = new StreamingContext(sparkConf, Seconds(ExecutorContext.patchSecond))
     ExecutorContext.streamContext = streamContext
-    val sparkContext = streamContext.sparkContext
-    val hiveContext = new HiveContext(sparkContext)
+    val hiveContext = new HiveContext(streamContext.sparkContext)
     ExecutorContext.hiveContext = hiveContext
-
-    ExecutorContext.jdbcDriver = PropertiesUtil.get("meteor.jdbc.driver")
-    ExecutorContext.jdbcUrl = PropertiesUtil.get("meteor.jdbc.url")
-    ExecutorContext.jdbcUsername = PropertiesUtil.get("meteor.jdbc.username")
-    ExecutorContext.jdbcPassword = PropertiesUtil.get("meteor.jdbc.password")
-
-    ExecutorContext.sshExecCronTaskMachines = StringUtils.split(PropertiesUtil.get("meteor.sshExecCronTaskMachines"), ",")
-    ExecutorContext.cronTaskExecJar = PropertiesUtil.get("meteor.cronTaskExecJar")
-    ExecutorContext.cronTaskLogPath = PropertiesUtil.get("meteor.cronTaskLogPath")
 
     DefTaskFactory.startup()
     CronTaskLoader.startup()
@@ -96,7 +74,7 @@ object MeteorServer extends Logging {
       for (topic: String <- StringUtils.split(task.getTopics, ",")) {
         topicSet += StringUtils.trim(topic)
       }
-      //        ExecutorContext.streamContext.sparkContext.setLocalProperty("spark.scheduler.pool", task.getPriority.toString())
+      ExecutorContext.streamContext.sparkContext.setLocalProperty("spark.scheduler.pool", task.getPriority.toString())
       val stream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ExecutorContext.streamContext, kafkaParams, topicSet.toSet)
       //      stream.checkpoint(Duration(9000))
       var streamRe = stream.transform({ rdd =>
@@ -178,7 +156,7 @@ object MeteorServer extends Logging {
       result
     })
 
-    hiveContext.udf.register("c_join", (table: String, toCassandra: Boolean, useLocalCache: Boolean, cassandraExpireSeconds: Integer, redisExpireSeconds: Integer, partition: String, key: String) => {
+    hiveContext.udf.register("c_join", (table: String, useLocalCache: Boolean, cacheEmpty: Boolean, useRedis: Boolean, redisExpireSeconds: Integer, useCassandra: Boolean, cassandraExpireSeconds: Integer, partition: String, key: String) => {
       var result = "{}"
       if (StringUtils.isNotBlank(key)) {
         var parKey = key
@@ -196,37 +174,44 @@ object MeteorServer extends Logging {
           }
         }
 
-        if (continueFlag) {
+        if (continueFlag && useRedis) {
           val redisResult = RedisClusterUtil.get(dataKey)
           if (StringUtils.isNotBlank(redisResult)) {
             result = redisResult
             continueFlag = false
             if (useLocalCache) LocalCacheUtil.put(dataKey, redisResult)
+          } else if (!useCassandra && useLocalCache && cacheEmpty) {
+            LocalCacheUtil.put(dataKey, "{}")
           }
         }
 
-        if (continueFlag && toCassandra) {
+        if (continueFlag && useCassandra) {
           val session = CassandraContextSingleton.getSession()
           val tablePS = CassandraContextSingleton.getPreparedStatement(s"SELECT value FROM $table WHERE key=?", table, cassandraExpireSeconds)
           val tableRS = session.execute(tablePS.bind(parKey))
+          var isNotExists = true
           if (tableRS != null) {
             val tableRSList = tableRS.toList
             if (tableRSList != null && tableRSList.size > 0) {
               val jsonData = tableRSList(0).getString("value")
               if (StringUtils.isNotBlank(jsonData)) {
+                isNotExists = false
                 result = jsonData
                 if (useLocalCache) LocalCacheUtil.put(dataKey, jsonData)
-                RedisClusterUtil.setex(dataKey, jsonData, redisExpireSeconds)
+                if (useRedis) RedisClusterUtil.setex(dataKey, jsonData, redisExpireSeconds)
               }
             }
+          }
+          if (isNotExists && useLocalCache && cacheEmpty) {
+            LocalCacheUtil.put(dataKey, "{}")
           }
         }
       }
       result
     })
 
-    hiveContext.udf.register("c_distinct", (table: String, toCassandra: Boolean, cassandraExpireSeconds: Integer, redisExpireSeconds: Integer, partition: String, key: String, value: String) => {
-      var result = false
+    hiveContext.udf.register("c_distinct", (table: String, redisExpireSeconds: Integer, useCassandra: Boolean, cassandraExpireSeconds: Integer, partition: String, key: String, value: String) => {
+      var result = 0L
       if (StringUtils.isNotBlank(key)) {
         var parKey = key
         if (StringUtils.isNotBlank(partition)) {
@@ -237,19 +222,18 @@ object MeteorServer extends Logging {
         val localCacheResult = LocalCacheUtil.get(dataKey)
         if (localCacheResult == null) {
           LocalCacheUtil.put(dataKey, "")
-          if (!toCassandra) {
+          if (!useCassandra) {
             result = RedisClusterUtil.setneex(dataKey, value, redisExpireSeconds)
           } else {
-            val redisResult = RedisClusterUtil.exists(dataKey)
-            if (!redisResult) {
-              RedisClusterUtil.setex(dataKey, "", redisExpireSeconds)
+            val redisResult = RedisClusterUtil.setneex(dataKey, "", redisExpireSeconds)
+            if (redisResult == 1L) {
               val session = CassandraContextSingleton.getSession()
               val tablePS = CassandraContextSingleton.getPreparedStatement(s"INSERT INTO $table (key, value) VALUES (?, ?) IF NOT EXISTS", table, cassandraExpireSeconds)
               val tableRS = session.execute(tablePS.bind(parKey, value))
               if (tableRS != null) {
                 val tableRSOne = tableRS.one
                 if (tableRSOne != null && tableRSOne.getBool(0)) {
-                  result = true
+                  result = 1L
                 }
               }
             }
@@ -259,22 +243,21 @@ object MeteorServer extends Logging {
       result
     })
 
-    hiveContext.udf.register("c_sum", (table: String, partition: String, key: String, value: Long, redisExpireSeconds: Integer) => {
-      var tablePartition = table
-      if (StringUtils.isNotBlank(partition)) {
-        tablePartition = table + "_" + partition
-      }
-      RedisClusterUtil.hincrBy(tablePartition, key, value, redisExpireSeconds)
-    })
-
     hiveContext.udf.register("get_sum", (table: String, partition: String, key: String) => {
-      var tablePartition = table
-      if (StringUtils.isNotBlank(partition)) {
-        tablePartition = table + "_" + partition
-      }
-      Option(RedisClusterUtil.hget(tablePartition, key)).getOrElse(0L)
+      val tablePartition = table + "|" + partition
+      RedisClusterUtil.hget(tablePartition, key)
     })
 
+    hiveContext.udf.register("c_distinct_set_size", (table: String, partition: String, dimVal: String) => {
+      var tablePartition = table + "|" + partition + "|" + dimVal
+      RedisClusterUtil.scard(tablePartition)
+    })
+
+    hiveContext.udf.register("c_distinct_pf_size", (table: String, partition: String, dimVal: String) => {
+      var tablePartition = table + "|" + partition + "|" + dimVal
+      RedisClusterUtil.pfcount(tablePartition)
+    })
+    
     hiveContext.udf.register("get_slot_time", (time: String, slot: Integer, sDateFormat: String, tDateFormat: String) => {
       val date = DateUtils.parseDate(time, sDateFormat)
       val calendar = Calendar.getInstance()
@@ -284,62 +267,6 @@ object MeteorServer extends Logging {
       val minuteSlot = (calendar.get(Calendar.MINUTE) / slot) * slot
       calendar.set(Calendar.MINUTE, minuteSlot)
       DateFormatUtils.format(calendar, tDateFormat)
-    })
-
-    hiveContext.udf.register("urlDecode", (url: String) => {
-      var result = url
-      if (StringUtils.isNotBlank(url)) {
-        try {
-          result = URLDecoder.decode(url, "UTF-8")
-        } catch {
-          case e: Exception => {}
-        }
-      }
-      result
-    })
-
-    hiveContext.udf.register("period_online_days", (stime: String, days: String, period: Int, sDateFormat: String, tDateFormat: String) => {
-      val sTimeDF = new SimpleDateFormat(sDateFormat)
-      val sdf = new SimpleDateFormat(tDateFormat)
-      var day = new Date;
-      try {
-        day = DateUtils.parseDate(stime, sDateFormat);
-      } catch {
-        case t: Throwable => t.printStackTrace()
-      }
-      if (StringUtils.isBlank(days)) {
-        val today = sdf.format(day)
-        today
-      } else {
-        val today = sdf.format(day)
-        if (days.endsWith(today)) {
-          days
-        } else {
-          var loginDays = days.concat(",").concat(today).split(",")
-          val lastPeriStartDate = DateUtils.addDays(new Date(), period * (-1))
-          val lastPeriStartDay = sdf.format(lastPeriStartDate)
-
-          loginDays = loginDays.filter { x => lastPeriStartDay.compareTo(x) < 0 }
-          val result = loginDays.reduce((fir: Any, sec: Any) => { fir.asInstanceOf[String].+(",").+(sec.asInstanceOf[String]) })
-          result
-        }
-      }
-    })
-
-    hiveContext.udf.register("c_max", (table: String, partition: String, value: Long, redisExpireSeconds: Integer) => {
-      var tablePartition = table
-      if (StringUtils.isNotBlank(partition)) {
-        tablePartition = table + "_" + partition
-      }
-      RedisClusterUtil.max(tablePartition, value, redisExpireSeconds)
-    })
-
-    hiveContext.udf.register("c_min", (table: String, partition: String, value: Long, redisExpireSeconds: Integer) => {
-      var tablePartition = table
-      if (StringUtils.isNotBlank(partition)) {
-        tablePartition = table + "_" + partition
-      }
-      RedisClusterUtil.min(tablePartition, value, redisExpireSeconds)
     })
   }
 

@@ -141,7 +141,7 @@ public class InstanceController {
 		Integer fileId = query.getFileId();
 		String instanceFlowId = query.getInstanceFlowId();
 		InstanceTaskDB instanceTask = instanceTaskService.getById(instanceFlowId, fileId);
-		System.out.println(instanceTask);
+		instanceTask.setFileBody(StringUtils.replace(instanceTask.getFileBody(), "\\r\\n", "\n"));
 		model.put("instanceTask", instanceTask);
 		return "pages/home/instance_task_log";
 	}

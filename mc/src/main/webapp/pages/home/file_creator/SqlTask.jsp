@@ -77,7 +77,7 @@
 							<label class="control-label">SQL</label>
 							<div class="controls">
 								<textarea name="sql" id="sql" rows="13" class="ht-width-p80" style="overflow:auto;" required>${defFileTask.sql}</textarea>
-								<div><a class="muted" href="${ctx}/pages/help/SqlTask.jsp" target="_blank">查看sql帮助文档</a></div>
+								<div><a class="muted" href="https://github.com/meteorchenwu/meteor/blob/master/SQL.md" target="_blank">查看sql帮助文档</a></div>
 							</div>
 						</div>
 						

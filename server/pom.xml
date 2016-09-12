@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>meteor</artifactId>
 		<groupId>com.meteor</groupId>
-		<version>1.0-SNAPSHOT</version>
+		<version>2.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>meteor-server</artifactId>
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>com.meteor</groupId>
 			<artifactId>meteor-task</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>2.0-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -200,6 +200,11 @@
 		<dependency>
 			<groupId>com.datastax.cassandra</groupId>
 			<artifactId>cassandra-driver-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.jsqlparser</groupId>
+			<artifactId>jsqlparser</artifactId>
 		</dependency>
 	</dependencies>
 

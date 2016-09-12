@@ -95,7 +95,7 @@ public class LoginController extends UserBaseController {
 		String sign = DigestUtils.md5Hex(passport + time + userAgent + SIGN);
 		String adminInCookieValue = passport + COOKIE_SPLIT_FLAG + time + COOKIE_SPLIT_FLAG + sign;
 		Cookie adminInfo = new Cookie(ADMIN_IN_COOKIE_KEY, adminInCookieValue);
-		adminInfo.setMaxAge(2 * 60 * 60);
+		adminInfo.setMaxAge(24 * 60 * 60);
 		HttpServletResponse response = getHttpServletResponse();
 		response.addCookie(adminInfo);
 	}

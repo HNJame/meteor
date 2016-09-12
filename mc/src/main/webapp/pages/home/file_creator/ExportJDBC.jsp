@@ -1,4 +1,4 @@
-﻿<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
@@ -13,7 +13,7 @@
 
 	<head>
 		<meta charset="utf-8">
-		<title>创建导出表数据至redis(用于join)</title>
+		<title>jdbc导出统计结果</title>
 		<!-- header js css -->
 		<%@include file="../../../commons/import_header_js_css.html"%>
 		
@@ -53,14 +53,14 @@
 					
 					<div id="breadcrumb_div" name="breadcrumb_div">
 						<ul class="breadcrumb">
-							<li>导出表数据(用于join)<span class="divider">/</span></li>
-							<li>导出至redis<span class="divider">/</span></li>
+							<li>导出统计结果数据<span class="divider">/</span></li>
+							<li>jdbc导出<span class="divider">/</span></li>
 							<li>${defFileTask.fileId}</li>
 						</ul>
 					</div>
 					
-					<form name="defFileTaskDataForm" class="form-horizontal" method="post" id="defFileTaskDataForm" action="${ctx}/task/writeExportRedisTask.do" onsubmit=""> 
-						<input id="fileType" name="fileType" type="hidden" value="ExportRedis" />
+					<form name="defFileTaskDataForm" class="form-horizontal" method="post" id="defFileTaskDataForm" action="${ctx}/task/writeExportJDBCTask.do" onsubmit=""> 
+						<input id="fileType" name="fileType" type="hidden" value="ExportJDBC" />
 						<input id="fileId" name="fileId" type="hidden" value="${defFileTask.fileId}" />
 						<input id="projectId" name="projectId" type="hidden" value="${defFileTask.projectId}" />
 						<input id="parentFileId" name="parentFileId" type="hidden" value="${defFileTask.parentFileId}" />
@@ -78,49 +78,42 @@
 							<div class="controls">
 								<textarea name="fetchSql" id="fetchSql" rows="13" class="ht-width-p80" style="overflow:auto;" required>${defFileTask.fetchSql}</textarea>
 								<div><a class="muted" href="https://github.com/meteorchenwu/meteor/blob/master/SQL.md" target="_blank">查看sql帮助文档</a></div>
+								<p class="muted">要想把统计结果纳入监控，select的字段中必须包含stime，格式为yyyy-MM-dd HH:mm:ss</p>
 							</div>
 						</div>
 						
 						<div class="control-group">
-							<label class="control-label">存至redis的“库.表”名</label>
+							<label class="control-label">jdbcDriver</label>
 							<div class="controls">
-								<input name="toTable" id="toTable" type="text" value="${defFileTask.toTable}" class="ht-width-p30" required></input>
-								<span class="muted">相当于redis的key的前半部分</span>
+								<input name="jdbcDriver" id="jdbcDriver" type="text" value="${defFileTask.jdbcDriver}" class="ht-width-p80" required></input>
 							</div>
 						</div>
 						
 						<div class="control-group">
-							<label class="control-label">时间分区列名</label>
+							<label class="control-label">jdbcUrl</label>
 							<div class="controls">
-								<input name="partitionKey" id="partitionKey" type="text" value="${defFileTask.partitionKey}" class="ht-width-p30"></input>
-								<span class="muted">分区，相当于redis的key的后半部分，空表示无分区</span>
+								<input name="jdbcUrl" id="jdbcUrl" type="text" value="${defFileTask.jdbcUrl}" class="ht-width-p80" required></input>
 							</div>
 						</div>
 						
 						<div class="control-group">
-							<label class="control-label">主键列名</label>
+							<label class="control-label">jdbcUsername</label>
 							<div class="controls">
-								<input name="tableKeys" id="tableKeys" type="text" value="${defFileTask.tableKeys}" class="ht-width-p30" required></input>
-								<span class="muted">数据主键列，即哪几列能确定唯一一行数据，多列组合主键用英文逗号分隔</span>
+								<input name="jdbcUsername" id="jdbcUsername" type="text" value="${defFileTask.jdbcUsername}" class="ht-width-p80" required></input>
 							</div>
 						</div>
 						
 						<div class="control-group">
-							<label class="control-label">数据已存在是否覆盖</label>
+							<label class="control-label">jdbcPassword</label>
 							<div class="controls">
-								<select name="isOverride" required>
-									<option value="1" <c:if test="${defFileTask.isOverride==1}">selected</c:if>>覆盖</option>
-									<option value="0" <c:if test="${defFileTask.isOverride==0}">selected</c:if>>不覆盖</option>
-								</select>
-								<span class="muted">表示在当前表，当前分区，已存在当前主键的数据，是否覆盖</span>
+								<input name="jdbcPassword" id="jdbcPassword" type="text" value="${defFileTask.jdbcPassword}" class="ht-width-p80" required></input>
 							</div>
 						</div>
 						
 						<div class="control-group">
-							<label class="control-label">数据过期时间(秒)</label>
+							<label class="control-label">插入SQL</label>
 							<div class="controls">
-								<input name="expireSeconds" id="expireSeconds" type="number" value="${defFileTask.expireSeconds}" class="ht-width-p30" required></input>
-								<span class="muted">表示数据过期清除时间</span>
+								<textarea name="insertSql" id="insertSql" rows="6" class="ht-width-p80" style="overflow:auto;" required>${defFileTask.insertSql}</textarea>
 							</div>
 						</div>
 						
@@ -161,7 +154,7 @@
 		<script type="text/javascript" >
 			 
 			$(function () {
-				
+			
 				<!-- 高级属性 -->
 				<%@include file="../file_properties/advanced_properties_js_init.html"%>
 				
@@ -188,6 +181,7 @@
 			
 			/** window.onload */
 			window.onload = function (){
+				// alert("call: window.onload");
 				onLoadWindowSelf();
 			} 
 

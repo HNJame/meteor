@@ -10,7 +10,7 @@ import com.google.common.cache.CacheBuilder
  */
 object LocalCacheUtil extends Logging {
 
-  val cache: Cache[String, String] = CacheBuilder.newBuilder().maximumSize(10000000).expireAfterWrite(30, TimeUnit.MINUTES).expireAfterAccess(10, TimeUnit.MINUTES).build()
+  val cache: Cache[String, String] = CacheBuilder.newBuilder().maximumSize(30000000).expireAfterWrite(30, TimeUnit.MINUTES).expireAfterAccess(10, TimeUnit.MINUTES).concurrencyLevel(20).build()
 
   def get(key: String): String = {
     cache.getIfPresent(key)

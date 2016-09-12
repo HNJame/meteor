@@ -4,9 +4,13 @@ import java.util.HashSet
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
+import scala.collection.mutable.ListBuffer
+
 import org.apache.commons.lang.StringUtils
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig
 
 import com.meteor.server.context.ExecutorContext
+import com.meteor.server.factory.TaskThreadPoolFactory
 
 import redis.clients.jedis.HostAndPort
 import redis.clients.jedis.JedisCluster
@@ -23,7 +27,10 @@ object RedisClusterUtil extends Logging {
     hostAndPortSet.add(new HostAndPort(hostPortSplit(0), Integer.parseInt(hostPortSplit(1))))
   }
 
-  val jedisCluster = new JedisCluster(hostAndPortSet)
+  val config = new GenericObjectPoolConfig()
+  config.setMaxTotal(ExecutorContext.redisMaxTotals)
+  config.setMaxIdle(ExecutorContext.redisMaxIdle)
+  val jedisCluster = new JedisCluster(hostAndPortSet, config)
 
   val expireMap = new java.util.concurrent.ConcurrentHashMap[String, Integer]
   val scheduledExecutor = Executors.newScheduledThreadPool(1)
@@ -32,12 +39,12 @@ object RedisClusterUtil extends Logging {
     jedisCluster.setex(key, expireSeconds, value)
   }
 
-  def setneex(key: String, value: String, expireSeconds: Integer): Boolean = {
-    var result: Boolean = false
+  def setneex(key: String, value: String, expireSeconds: Integer): Long = {
+    var result = 0L
     var setResult = jedisCluster.setnx(key, value)
     if (setResult == 1) {
-      jedisCluster.expire(key, expireSeconds)
-      result = true
+      expireMap.put(key, expireSeconds)
+      result = 1L
     }
     result
   }
@@ -60,14 +67,22 @@ object RedisClusterUtil extends Logging {
     result
   }
 
+  def hincrBy(hname: String, hkey: String, hval: Long): Long = {
+    jedisCluster.hincrBy(hname, hkey, Option(hval).getOrElse(0L))
+  }
+
   def hget(hname: String, hkey: String): Long = {
-    jedisCluster.hget(hname, hkey).toLong
+    (Option(jedisCluster.hget(hname, hkey)).getOrElse("0")).toLong
   }
 
   def max(key: String, value: Long, expireSeconds: Integer): Long = {
+    expireMap.put(key, expireSeconds)
+    max(key, value)
+  }
+
+  def max(key: String, value: Long): Long = {
     var maxVal = value.toString
     jedisCluster.zadd(key, value, value.toString)
-    expireMap.put(key, expireSeconds)
     val result = jedisCluster.zrevrange(key, 0, 0).iterator()
     if (result.hasNext) {
       maxVal = result.next()
@@ -76,14 +91,57 @@ object RedisClusterUtil extends Logging {
   }
 
   def min(key: String, value: Long, expireSeconds: Integer): Long = {
+    expireMap.put(key, expireSeconds)
+    min(key, value)
+  }
+
+  def min(key: String, value: Long): Long = {
     var minVal = value.toString
     jedisCluster.zadd(key, value, value.toString)
-    expireMap.put(key, expireSeconds)
     val result = jedisCluster.zrange(key, 0, 0).iterator()
     if (result.hasNext) {
       minVal = result.next()
     }
     minVal.toLong
+  }
+
+  def saddMulti(key: String, valArr: Array[String], expireSeconds: Integer): Long = {
+    expireMap.put(key, expireSeconds)
+    saddMulti(key, valArr)
+  }
+
+  def saddMulti(key: String, valArr: Array[String]): Long = {
+    RedisClusterJavaUtil.sadd(jedisCluster, key, valArr)
+  }
+
+  def scard(key: String): Long = {
+    jedisCluster.scard(key)
+  }
+
+  def pfadd(key: String, valArr: Array[String]): Long = {
+    RedisClusterJavaUtil.pfadd(jedisCluster, key, valArr)
+  }
+
+  def pfcount(key: String): Long = {
+    jedisCluster.pfcount(key)
+  }
+
+  def expire(key: String, expireSeconds: Integer): Unit = {
+    expireMap.put(key, expireSeconds)
+  }
+
+  def expireKeysThread(toExpireKeyList: ListBuffer[String], expireSeconds: Int): Unit = {
+    TaskThreadPoolFactory.cachedThreadPool.submit(new Runnable() {
+      override def run(): Unit = {
+        try {
+          for (redisKey <- toExpireKeyList) {
+            jedisCluster.expire(redisKey, expireSeconds)
+          }
+        } catch {
+          case e: Exception => logError("设置redis过期时间失败!", e)
+        }
+      }
+    })
   }
 
   scheduledExecutor.scheduleAtFixedRate(new Runnable {
@@ -101,5 +159,5 @@ object RedisClusterUtil extends Logging {
         case e: Exception => logError("设置redis过期时间失败", e)
       }
     }
-  }, 5, 5, TimeUnit.MINUTES)
+  }, 1, 1, TimeUnit.MINUTES)
 }

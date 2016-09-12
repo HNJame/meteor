@@ -22,6 +22,7 @@ import com.meteor.server.context.ExecutorContext
 import com.meteor.server.executor.instance.InstanceFlowExecutor
 import com.meteor.server.executor.instance.InstanceTaskExecutor
 import com.meteor.server.util.Logging
+import com.meteor.model.view.export.ExportJDBCTask
 
 object InstanceFlowExecutorFactory extends Logging {
 
@@ -85,6 +86,11 @@ object InstanceFlowExecutorFactory extends Logging {
           t.setToBrokers(ExecutorContext.kafkaClusterHostPorts)
         }
 
+        val targetFromSql = replaceFrom(t.getFetchSql, instanceFlowId)
+        t.setFetchSql(targetFromSql)
+      }
+      
+      case t: ExportJDBCTask => {
         val targetFromSql = replaceFrom(t.getFetchSql, instanceFlowId)
         t.setFetchSql(targetFromSql)
       }
