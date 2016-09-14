@@ -1,5 +1,8 @@
 package com.meteor.server.context
 
+import java.util.concurrent.ConcurrentHashMap
+
+import scala.collection.JavaConverters._
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.streaming.StreamingContext
@@ -19,6 +22,8 @@ object ExecutorContext {
   var redisClusterHostPorts: String = _
   var redisMaxTotals: Int = _
   var redisMaxIdle: Int = _
+  var zkConnection:String=_
+  val appCloseZkNamesparce:String="appCloseListener"
 
   var jdbcDriver: String = _
   var jdbcUrl: String = _
@@ -38,6 +43,10 @@ object ExecutorContext {
 
   var excludeTaskIds: Array[Int] = _
 
+
+  val topicAndPartitions=new ConcurrentHashMap[String,String]()
+
+
   def init(): Unit = {
     PropertiesUtil.load("/data/apps/spark/conf/meteor.properties")
 
@@ -50,6 +59,7 @@ object ExecutorContext {
     redisClusterHostPorts = PropertiesUtil.get("meteor.redisClusterHostPorts", "redis1:6379,redis2:6379,redis3:6379")
     redisMaxTotals = Integer.parseInt(PropertiesUtil.get("meteor.redisMaxTotals", "600"))
     redisMaxIdle = Integer.parseInt(PropertiesUtil.get("meteor.redisMaxIdle", "600"))
+    zkConnection=PropertiesUtil.get("meteor.zookeeper")
 
     jdbcDriver = PropertiesUtil.get("meteor.jdbc.driver")
     jdbcUrl = PropertiesUtil.get("meteor.jdbc.url")
