@@ -1,7 +1,16 @@
-git clone https://xxx
+git clone https://github.com/meteorchenwu/meteor.git
+cd meteor
 
+git fetch origin
+git checkout -b chenwu origin/chenwu
+git merge master
 
 git mergeTool
-
+删除orgi文件
 git commit -m ''
+
+git checkout master
+git merge --no-ff chenwu
+git push origin master
+
 
