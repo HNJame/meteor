@@ -6,12 +6,14 @@ import java.util.Calendar
 import java.util.Date
 import java.util.UUID
 
+import kafka.common.TopicAndPartition
+import kafka.message.MessageAndMetadata
+
 import scala.collection.JavaConversions.asScalaSet
 import scala.collection.JavaConversions.iterableAsScalaIterable
 import scala.collection.JavaConversions.mapAsJavaMap
 import scala.collection.JavaConversions.mapAsScalaMap
 import scala.collection.JavaConversions.mutableMapAsJavaMap
-import scala.reflect.runtime.universe
 
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang.math.NumberUtils
@@ -24,31 +26,35 @@ import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.streaming.Seconds
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.Time
-import org.apache.spark.streaming.kafka.HasOffsetRanges
-import org.apache.spark.streaming.kafka.KafkaUtils
+import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
 
 import com.meteor.model.view.importqueue.ImportKafkaTask
-import com.meteor.server.context.CassandraContextSingleton
-import com.meteor.server.context.ExecutorContext
+import com.meteor.server.context.{ CassandraContextSingleton, ExecutorContext}
 import com.meteor.server.cron.CronTaskLoader
 import com.meteor.server.executor.instance.InstanceFlowExecutor
 import com.meteor.server.factory.DefTaskFactory
 import com.meteor.server.factory.InstanceFlowExecutorObjectPool
 import com.meteor.server.factory.TaskThreadPoolFactory
-import com.meteor.server.util.LocalCacheUtil
-import com.meteor.server.util.Logging
-import com.meteor.server.util.RedisClusterUtil
+import com.meteor.server.util._
+import com.meteor.server.checkpoint.ZkOffsetCheckPoint
 
 import kafka.serializer.StringDecoder
+
+import scala.collection.mutable
 
 object MeteorServer extends Logging {
 
   def main(args: Array[String]) {
+    logInfo("Starting MeteorServer!")
+
     val sparkConf = new SparkConf().setAppName(ExecutorContext.appName)
     val streamContext = new StreamingContext(sparkConf, Seconds(ExecutorContext.patchSecond))
     ExecutorContext.streamContext = streamContext
     val hiveContext = new HiveContext(streamContext.sparkContext)
     ExecutorContext.hiveContext = hiveContext
+
+    val offsetCheckpointListener=new ZkOffsetCheckPoint
+    offsetCheckpointListener.registerCheckpointListener(streamContext)
 
     DefTaskFactory.startup()
     CronTaskLoader.startup()
@@ -63,7 +69,6 @@ object MeteorServer extends Logging {
 
   def importQueue(): Unit = {
     for (sourceTaskId: Integer <- DefTaskFactory.defAllValid.getImportQueueSet.toSet) {
-      val sourceTaskIdStr = sourceTaskId.toString()
       val task = DefTaskFactory.getCloneById(sourceTaskId).asInstanceOf[ImportKafkaTask]
       if (!StringUtils.equals(System.getenv("DWENV"), "prod")) {
         task.setBrokers(ExecutorContext.kafkaClusterHostPorts)
@@ -75,25 +80,37 @@ object MeteorServer extends Logging {
         topicSet += StringUtils.trim(topic)
       }
       ExecutorContext.streamContext.sparkContext.setLocalProperty("spark.scheduler.pool", task.getPriority.toString())
-      val stream = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder](ExecutorContext.streamContext, kafkaParams, topicSet.toSet)
-      //      stream.checkpoint(Duration(9000))
-      var streamRe = stream.transform({ rdd =>
+
+      modifyCheckpointOffsets(task,topicSet)
+
+      var topicAndPartitionMap= scala.collection.immutable.Map[TopicAndPartition,Long]();
+      for((topicParStr,offset)<-ExecutorContext.topicAndPartitions){
+        val topicParArray=topicParStr.split(":")
+        if (topicSet.contains(topicParArray(0))) {
+          topicAndPartitionMap += new TopicAndPartition(topicParArray(0), topicParArray(1).toInt) -> offset.toLong
+        }
+      }
+
+      var streamRe = KafkaUtils.createDirectStream[String, String, StringDecoder, StringDecoder, String](ExecutorContext.streamContext, kafkaParams, topicAndPartitionMap,
+        (mmd: MessageAndMetadata[String, String]) => mmd.message()).transform({ rdd =>
         TaskThreadPoolFactory.cachedThreadPool.submit(new Runnable() {
           override def run(): Unit = {
             val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges.sortBy(x => x.partition)
             var str = "\n"
             for (o <- offsetRanges) {
-              str += s"${o.topic}    ${o.partition}    ${o.fromOffset}    ${o.untilOffset}\n"
+              str += s"${o.topic}    ${o.partition}    ${o.fromOffset}    ${o.untilOffset}  ${o.untilOffset - o.fromOffset}\n"
+              ExecutorContext.topicAndPartitions.put(s"${o.topic}:${o.partition}", o.untilOffset.toString)
             }
             logInfo(str)
           }
         })
         rdd
       })
+
       if (task.getRePartitionNum > 0) {
         streamRe = streamRe.repartition(task.getRePartitionNum)
       }
-      streamRe.map(_._2).foreachRDD((rdd: RDD[String], time: Time) => {
+      streamRe.foreachRDD((rdd: RDD[String], time: Time) => {
         TaskThreadPoolFactory.cachedThreadPool.submit(new Runnable() {
           override def run(): Unit = {
             if (!rdd.isEmpty()) {
@@ -107,6 +124,46 @@ object MeteorServer extends Logging {
       })
     }
   }
+
+  //修改offset，例如offset越界或者partition增加减少等，都有必要修改
+  //offset越界的时候，直接去最大的offset
+  def modifyCheckpointOffsets(task :ImportKafkaTask,set:scala.collection.mutable.Set[String]): Unit ={
+    import scala.collection.JavaConverters._
+    val offsetTool=OffsetTool.getInstance()
+    val earliestOffsets=offsetTool.getEarliestOffset(task.getBrokers,set.toList.asJava,task.getGroupId).asScala
+    val latestOffsets=offsetTool.getLastOffset(task.getBrokers,set.toList.asJava,task.getGroupId).asScala
+    val earliestOffsetSet=new mutable.HashMap[String,Long]()
+    for ((topicAndPartition,offset)<-earliestOffsets){
+      earliestOffsetSet+=topicAndPartition.topic+":"+topicAndPartition.partition->offset
+    }
+
+    val latestOffsetSet=new mutable.HashMap[String,Long]()
+    for ((topicAndPartition,offset)<-latestOffsets){
+      latestOffsetSet+=topicAndPartition.topic+":"+topicAndPartition.partition->offset
+    }
+    assert(latestOffsetSet.size==earliestOffsetSet.size)
+
+    for ((topicAndPartition,offset)<-latestOffsetSet){
+      if(ExecutorContext.topicAndPartitions.containsKey(topicAndPartition)){
+        val parOffset=ExecutorContext.topicAndPartitions.get(topicAndPartition).toLong
+        if (parOffset > offset || parOffset < earliestOffsetSet.get(topicAndPartition).get){
+          ExecutorContext.topicAndPartitions+=topicAndPartition->latestOffsetSet.get(topicAndPartition).get.toString
+          logInfo(s"the checkpoint offset[${parOffset}}] of [${topicAndPartition}] out of range ${earliestOffsetSet.get(topicAndPartition).get}--${offset} " +
+            s"use max offset replace")
+        }else{
+          logInfo(s"the checkpoint offset of [${topicAndPartition}] is [${parOffset}}]!")
+        }
+      }else{
+        ExecutorContext.topicAndPartitions+=topicAndPartition->offset.toString
+        logInfo(s"[${topicAndPartition}] has not checkpoint offset,use max offset[${offset.toString}] replace")
+      }
+    }
+
+
+
+  }
+
+
 
   //$SPARK_HOME/con/spark-default
   //spark.driver.extraClassPath  /home/spark/spark/lib_ext/*

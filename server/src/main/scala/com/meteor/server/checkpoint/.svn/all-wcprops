@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/repos/datawarehouse/!svn/ver/49847/meteor/branches/main/server/src/main/scala/com/duowan/meteor/server/checkpoint
+END
+OffsetCheckpoint.scala
+K 25
+svn:wc:ra_dav:version-url
+V 137
+/repos/datawarehouse/!svn/ver/49804/meteor/branches/main/server/src/main/scala/com/duowan/meteor/server/checkpoint/OffsetCheckpoint.scala
+END
+ZkOffsetCheckPoint.scala
+K 25
+svn:wc:ra_dav:version-url
+V 139
+/repos/datawarehouse/!svn/ver/49847/meteor/branches/main/server/src/main/scala/com/duowan/meteor/server/checkpoint/ZkOffsetCheckPoint.scala
+END

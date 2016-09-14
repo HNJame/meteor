@@ -222,12 +222,12 @@ java -Xms128m -Xmx128m -cp /data/meteor/demo/target/meteor-demo-2.0-SNAPSHOT-jar
 2)cp /data/meteor/hiveudf/target/meteor-hiveudf-2.0-SNAPSHOT-jar-with-dependencies.jar /data/spark_lib_ext/<br />
 3)cp /data/meteor/conf/log4j.properties /data/apps/spark/conf/<br />
 4)cp /data/meteor/conf/fairscheduler.xml /data/apps/spark/conf/<br />
-4)vim /data/apps/spark/conf/spark-defaults.conf<br />
+5)vim /data/apps/spark/conf/spark-defaults.conf<br />
 <pre>
 spark.driver.extraClassPath  /data/spark_lib_ext/*
 spark.executor.extraClassPath  /data/spark_lib_ext/*
 </pre>
-5)启动程序
+6)启动程序
 <pre>
 /data/apps/spark/bin/spark-submit \
   --class com.meteor.server.MeteorServer \
@@ -242,7 +242,9 @@ spark.executor.extraClassPath  /data/spark_lib_ext/*
   "/data/apps/spark/conf/meteor.properties"
 </pre>
 首次启动会因kafka的一些topic没有，报错而自动创建<br />
-可通过http://本机外网IP:4040查看
+可通过http://本机外网IP:4040查看<br/>
+7)优雅关闭程序，使重启不丢失信息<br/>
+java -Xms128m -Xmx128m -cp /data/meteor/server/target/meteor-server-2.0-SNAPSHOT-jar-with-dependencies.jar com.duowan.meteor.server.util.ServerCloseCmd   -zk zk1:2181 -app MeteorServer -cmd close
 
 ##### 7、启动日志转发程序，也可以更改里面PerformanceConsumerThread类的源码，定制监控逻辑
 用于把执行日志导回mysql，方便前台管理系统查看<br />
