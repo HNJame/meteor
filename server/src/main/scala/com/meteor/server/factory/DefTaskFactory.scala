@@ -2,19 +2,21 @@ package com.meteor.server.factory
 
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+
 import org.apache.commons.lang3.SerializationUtils
+
 import com.meteor.model.custom.DefAllValid
 import com.meteor.model.view.AbstractBase
+import com.meteor.model.view.AbstractTaskDepend
+import com.meteor.server.context.ExecutorContext
 import com.meteor.server.util.Logging
 import com.meteor.task.TaskManager
-import com.meteor.server.context.ExecutorContext
-import com.meteor.model.view.AbstractTaskDepend
 
 object DefTaskFactory extends Logging {
 
   var defAllValid: DefAllValid = _
   val scheduledExecutor = Executors.newScheduledThreadPool(1)
-	var taskManager: TaskManager = _
+  var taskManager: TaskManager = _
 
   def startup(): Unit = {
     taskManager = TaskManager.getInstance(ExecutorContext.jdbcDriver, ExecutorContext.jdbcUrl, ExecutorContext.jdbcUsername, ExecutorContext.jdbcPassword)
@@ -34,22 +36,36 @@ object DefTaskFactory extends Logging {
     logInfo("Does getDefAllValid")
     val defAllValidData = taskManager.getDefAllValid
     if (defAllValidData != null && !defAllValidData.getDefAllMap.isEmpty()) {
-      
-      for(taskId <- ExecutorContext.excludeTaskIds) {
-        defAllValidData.getCronSet.remove(taskId)
-        defAllValidData.getImportQueueSet.remove(taskId)
+
+      if (!ExecutorContext.execSourceTaskIds.isEmpty) {
+        for (taskId <- defAllValidData.getCronSet.toArray()) {
+          if (!ExecutorContext.execSourceTaskIds.contains(taskId)) {
+            defAllValidData.getCronSet.remove(taskId)
+            ExecutorContext.excludeTaskIds += taskId.asInstanceOf[Int]
+          }
+        }
+
+        for (taskId <- defAllValidData.getImportQueueSet.toArray()) {
+          if (!ExecutorContext.execSourceTaskIds.contains(taskId)) {
+            defAllValidData.getImportQueueSet.remove(taskId)
+            ExecutorContext.excludeTaskIds += taskId.asInstanceOf[Int]
+          }
+        }
+      }
+
+      for (taskId <- ExecutorContext.excludeTaskIds) {
         val task = defAllValidData.getDefAllMap.get(taskId).asInstanceOf[AbstractTaskDepend]
-        if(task != null) {
-          for(preTaskId <- task.getPreDependSet.toArray()) {
+        if (task != null) {
+          for (preTaskId <- task.getPreDependSet.toArray()) {
             defAllValidData.getDefAllMap.get(preTaskId).asInstanceOf[AbstractTaskDepend].getPostDependSet.remove(taskId)
           }
-          for(postTaskId <- task.getPostDependSet.toArray()) {
+          for (postTaskId <- task.getPostDependSet.toArray()) {
             defAllValidData.getDefAllMap.get(postTaskId).asInstanceOf[AbstractTaskDepend].getPreDependSet.remove(taskId)
           }
           defAllValidData.getDefAllMap.remove(taskId)
         }
       }
-      
+
       synchronized {
         defAllValid = defAllValidData
       }

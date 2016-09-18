@@ -2,7 +2,8 @@ package com.meteor.server.context
 
 import java.util.concurrent.ConcurrentHashMap
 
-import scala.collection.JavaConverters._
+import scala.collection.mutable.ListBuffer
+
 import org.apache.commons.lang3.StringUtils
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.streaming.StreamingContext
@@ -41,9 +42,9 @@ object ExecutorContext {
   val instanceFlowTopic = "instance_flow"
   val performanceTopic = "performance"
 
-  var excludeTaskIds: Array[Int] = _
-
-
+  var execSourceTaskIds: List[Int] = _
+  var excludeTaskIds: ListBuffer[Int] = _
+  
   val topicAndPartitions=new ConcurrentHashMap[String,String]()
 
 
@@ -72,9 +73,16 @@ object ExecutorContext {
 
     val excludeTaskIdsStr = PropertiesUtil.get("meteor.excludeTaskIds")
     if (StringUtils.isNotBlank(excludeTaskIdsStr)) {
-      excludeTaskIds = StringUtils.split(excludeTaskIdsStr, ",").map { x => Integer.parseInt(StringUtils.trim(x)) }
+      excludeTaskIds = StringUtils.split(excludeTaskIdsStr, ",").map { x => Integer.parseInt(StringUtils.trim(x)) }.toList.to[ListBuffer]
     } else {
-      excludeTaskIds = Array[Int]()
+      excludeTaskIds = ListBuffer[Int]()
+    }
+
+    val execSourceTaskIdsStr = PropertiesUtil.get("meteor.execSourceTaskIds")
+    if (StringUtils.isNotBlank(execSourceTaskIdsStr)) {
+      execSourceTaskIds = StringUtils.split(execSourceTaskIdsStr, ",").map { x => Integer.parseInt(StringUtils.trim(x)) }.toList
+    } else {
+      execSourceTaskIds = List[Int]()
     }
   }
 }
