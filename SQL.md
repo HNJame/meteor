@@ -193,20 +193,19 @@ LATERAL VIEW c_json_tuple(c_join('db1.dwd_table1', true, true, true, 1800, false
 8、csql_group_by_n自定义groupBy
 --------------------
 <pre>
-1)通过在sql最前面带上“csql_group_by_n:”，可改造spark原有group by的执行逻辑（用shuffle，涉及数据排序，网络交互，读写磁盘），使执行group by时，各分区独立跟redis之类交互，不需要shuffle。从而使性能提升10倍以上
+1)通过在sql最前面带上“csql_group_by_n:”，可改造spark原有group by的执行逻辑（用shuffle，涉及数据排序，网络交互，读写磁盘），使执行group by时，各分区独立跟redis之类交互，不需要shuffle。从而使性能提升10倍以上。
+另外，使用“csql_group_by_n:”，不支持在group by同级的where过滤，要用where，需要用子查询。
 
-2)模块
-a、模块一
+2)使用示例
+a、示例一
 	csql_group_by_n:
-	select stime_yyyyMMdd, col1, col2, 
-	  c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
+	select stime_yyyyMMdd, col1, col2, c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
 	from dwd_table1
 	group by stime_yyyyMMdd, col1, col2
 
-b、模块二：用spark原有的group by对结果再做一次聚合，从而减少结果的输出量
+b、示例二：用spark原有的group by对结果再做一次聚合，从而减少结果的输出量
 	csql_group_by_n:
-	select stime_yyyyMMdd, col1, col2, 
-	  c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
+	select stime_yyyyMMdd, col1, col2, c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
 	from dwd_table1
 	group by stime_yyyyMMdd, col1, col2
 	;
@@ -214,16 +213,33 @@ b、模块二：用spark原有的group by对结果再做一次聚合，从而减
 	from $targetTable
 	group by stime_yyyyMMdd, col1, col2
 
-c、模块三：在模型构建sql功能中，把自定义group by后的执行结果cache起来
+c、示例三：在模型构建sql功能中，把自定义group by后的执行结果cache起来
 	csql_group_by_n:
-	select stime_yyyyMMdd, col1, col2, 
-	  c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
+	select stime_yyyyMMdd, col1, col2, c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
 	from dwd_table1
 	group by stime_yyyyMMdd, col1, col2
 	;
 	cache table test_table1 as 
 	select *
 	from $targetTable
+d、示例四：where过滤
+	csql_group_by_n:
+	select stime_yyyyMMdd, col1, col2, c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
+	from (
+	  select *
+	  from dwd_table1
+	  where col1='a'
+	) t 
+	group by stime_yyyyMMdd, col1, col2
+e、示例五：多层group by 
+	csql_group_by_n:
+	select stime_yyyyMMdd, col1, c_max('db1.table1_max', key(stime_yyyyMMdd, col1), cd_result, 1, 90000) cd_result_max
+	from (
+	  select stime_yyyyMMdd, col1, col2, c_counst_distinct('db1.table1_cd', key(stime_yyyyMMdd, col1, col2), value(uid), 1000, 1, 90000) cd_result
+	  from dwd_table1
+	  group by stime_yyyyMMdd, col1, col2
+	) t
+	group by stime_yyyyMMdd, col1
 </pre>
 
 
