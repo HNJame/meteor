@@ -37,3 +37,6 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等，都可以�
 #### 五、demo安装示例
 [demo安装](https://github.com/meteorchenwu/meteor/blob/master/INSTALL.md)
 
+#### 六、平台介绍ppt
+[平台介绍ppt](https://github.com/meteorchenwu/meteor/tree/master/doc/ppt/流星实时开发平台介绍.pptx)
+
