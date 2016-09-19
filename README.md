@@ -40,3 +40,6 @@ UV，PV，新UV，跟踪类指标，在线时长、在线人数等，都可以�
 #### 六、平台介绍ppt
 [平台介绍ppt](https://github.com/meteorchenwu/meteor/tree/master/doc/ppt/流星实时开发平台介绍.pptx)
 
+<br/><br/>
+开发者：欢聚时代陈武、林育灿
+
