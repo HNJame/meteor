@@ -135,7 +135,9 @@ object RedisClusterUtil extends Logging {
       override def run(): Unit = {
         try {
           for (redisKey <- toExpireKeyList) {
-            jedisCluster.expire(redisKey, expireSeconds)
+            if(jedisCluster.ttl(redisKey) == -1) {
+              jedisCluster.expire(redisKey, expireSeconds)
+            }
           }
         } catch {
           case e: Exception => logError("设置redis过期时间失败!", e)
@@ -153,7 +155,9 @@ object RedisClusterUtil extends Logging {
         while (iter.hasNext()) {
           val entry = iter.next()
           expireMap.remove(entry.getKey)
-          jedisCluster.expire(entry.getKey, entry.getValue)
+          if(jedisCluster.ttl(entry.getKey) == -1) {
+            jedisCluster.expire(entry.getKey, entry.getValue)
+          }
         }
       } catch {
         case e: Exception => logError("设置redis过期时间失败", e)
