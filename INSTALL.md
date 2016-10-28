@@ -244,7 +244,7 @@ spark.executor.extraClassPath  /data/spark_lib_ext/*
 首次启动会因kafka的一些topic没有，报错而自动创建<br />
 可通过http://本机外网IP:4040查看<br/>
 7)优雅关闭程序，使重启不丢失信息<br/>
-java -Xms128m -Xmx128m -cp /data/meteor/server/target/meteor-server-2.0-SNAPSHOT-jar-with-dependencies.jar com.duowan.meteor.server.util.ServerCloseCmd   -zk zk1:2181 -app MeteorServer -cmd close
+java -Xms128m -Xmx128m -cp /data/meteor/server/target/meteor-server-2.0-SNAPSHOT-jar-with-dependencies.jar com.meteor.server.util.ServerCloseCmd   -zk zk1:2181 -app MeteorServer -cmd close
 
 ##### 7、启动日志转发程序，也可以更改里面PerformanceConsumerThread类的源码，定制监控逻辑
 用于把执行日志导回mysql，方便前台管理系统查看<br />
