@@ -65,7 +65,7 @@ class ExportKafkaTaskExecutor extends AbstractTaskExecutor with Logging {
   def sendKafka(df: DataFrame, toBrokers: String, toTopic: String, fileId: Integer): Unit = {
     df.toJSON.foreachPartition(p => {
       val producer = KafkaProducerSingleton.getInstance(toBrokers)
-      val msgList = new java.util.ArrayList[KeyedMessage[String, String]]
+      var msgList = new java.util.ArrayList[KeyedMessage[String, String]]
       var lastRow = ""
       var i = 0
       var partitionKey = UUID.randomUUID().toString
@@ -79,6 +79,7 @@ class ExportKafkaTaskExecutor extends AbstractTaskExecutor with Logging {
           producer.send(msgList)
           i = 0
           partitionKey = UUID.randomUUID().toString
+          msgList = new java.util.ArrayList[KeyedMessage[String, String]]
         }
       }
 
@@ -110,7 +111,7 @@ class ExportKafkaTaskExecutor extends AbstractTaskExecutor with Logging {
         val aggResultMapList = CustomSQLUtil.exec(sql, p)
 
         val producer = KafkaProducerSingleton.getInstance(toBrokers)
-        val msgList = new java.util.ArrayList[KeyedMessage[String, String]]
+        var msgList = new java.util.ArrayList[KeyedMessage[String, String]]
         var lastRow = ""
         var i = 0
         var partitionKey = UUID.randomUUID().toString
@@ -126,6 +127,7 @@ class ExportKafkaTaskExecutor extends AbstractTaskExecutor with Logging {
               producer.send(msgList)
               i = 0
               partitionKey = UUID.randomUUID().toString
+              msgList = new java.util.ArrayList[KeyedMessage[String, String]]
             }
           }
         }
